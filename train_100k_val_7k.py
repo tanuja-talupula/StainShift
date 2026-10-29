@@ -1,14 +1,17 @@
 """
 StainShift: Train on NCT-CRC-HE-100K-NONORM and Validate on CRC-VAL-HE-7K
 Implements the multi-center digital pathology benchmark (Kather et al., PLOS Medicine 2019).
+Supports optional MLflow experiment tracking.
 """
 
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 import glob
 import json
 import logging
+import os
 from pathlib import Path
 import sys
 import time
@@ -29,6 +32,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.dataset import IMAGENET_MEAN, IMAGENET_STD
 from src.models import CLASS_NAMES, CLASS_DESCRIPTIONS, get_model, save_checkpoint
+from src.tracking import MLflowTracker
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +178,12 @@ def main() -> None:
     )
     parser.add_argument("--output_name", type=str, default="model_100k_nonorm")
     parser.add_argument("--dry-run", action="store_true", help="Validate setup without executing training")
+    # MLflow arguments
+    parser.add_argument("--use_mlflow", action="store_true", help="Enable MLflow experiment tracking")
+    parser.add_argument("--mlflow_tracking_uri", type=str, default=os.getenv("MLFLOW_TRACKING_URI"), help="MLflow tracking URI")
+    parser.add_argument("--mlflow_experiment_name", type=str, default=os.getenv("MLFLOW_EXPERIMENT_NAME", "stainshift_benchmark"), help="MLflow experiment name")
+    parser.add_argument("--run_type", type=str, default="smoke_test", choices=["smoke_test", "full_experiment"], help="Label run as smoke_test or full_experiment")
+    parser.add_argument("--log_models_to_mlflow", action="store_true", help="Explicitly log checkpoint weights to MLflow")
     args = parser.parse_args()
 
     train_dir = Path(args.train_dir)
@@ -191,101 +201,146 @@ def main() -> None:
         print(f"  Train dir: {train_dir} (Exists: {train_dir.is_dir()})")
         print(f"  Val dir: {val_dir} (Exists: {val_dir.is_dir()})")
         print(f"  Selection protocol: {args.selection_protocol}")
+        print(f"  MLflow tracking enabled: {args.use_mlflow}")
         print("[DRY-RUN] Validation complete.")
         return
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    # Build validation set
-    val_dataset = HistopathologyFolderDataset(val_dir, is_train=False, seed=args.seed)
-    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=0)
+    tracker = None
+    if args.use_mlflow:
+        tracker = MLflowTracker(
+            enabled=True,
+            tracking_uri=args.mlflow_tracking_uri,
+            experiment_name=args.mlflow_experiment_name,
+            run_name=f"train_{args.output_name}",
+            run_type=args.run_type,
+            log_checkpoints=args.log_models_to_mlflow,
+            tags={
+                "selection_protocol": args.selection_protocol,
+                "train_cohort": train_dir.name,
+                "validation_cohort": val_dir.name,
+                "seed": args.seed,
+            }
+        )
 
-    # Build train set
-    train_dataset = HistopathologyFolderDataset(
-        train_dir,
-        is_train=True,
-        max_samples_per_class=args.max_train_per_class,
-        seed=args.seed
-    )
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0)
+    with tracker if tracker else nullcontext():
+        if tracker and tracker.enabled:
+            tracker.log_params({
+                "selection_protocol": args.selection_protocol,
+                "train_dir": str(train_dir),
+                "val_dir": str(val_dir),
+                "epochs": args.epochs,
+                "batch_size": args.batch_size,
+                "lr": args.lr,
+                "seed": args.seed,
+                "max_train_per_class": str(args.max_train_per_class),
+            })
 
-    model = get_model(arch="mobilenet_v3_small", pretrained=True, num_classes=len(CLASS_NAMES)).to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(args.epochs, 1))
+        # Build validation set
+        val_dataset = HistopathologyFolderDataset(val_dir, is_train=False, seed=args.seed)
+        val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=0)
 
-    save_path = output_dir / f"{args.output_name}.pth"
-    best_val_f1 = -1.0
-    best_report = None
-    best_acc = 0.0
+        # Build train set
+        train_dataset = HistopathologyFolderDataset(
+            train_dir,
+            is_train=True,
+            max_samples_per_class=args.max_train_per_class,
+            seed=args.seed
+        )
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0)
 
-    for epoch in range(1, args.epochs + 1):
-        t0 = time.time()
-        print(f"\n--- Epoch [{epoch}/{args.epochs}] ---")
-        tr_loss, tr_acc, tr_f1 = train_one_epoch(model, train_loader, criterion, optimizer, device)
-        val_loss, val_acc, val_f1, report = evaluate_cohort(model, val_loader, criterion, device)
-        scheduler.step()
-        elapsed = time.time() - t0
+        model = get_model(arch="mobilenet_v3_small", pretrained=True, num_classes=len(CLASS_NAMES)).to(device)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(args.epochs, 1))
 
-        print(f"Epoch [{epoch}/{args.epochs}] Completed in {elapsed/60:.2f}m")
-        print(f"  Training ({train_dir.name}): Loss={tr_loss:.4f}, Acc={tr_acc*100:.2f}%, Macro F1={tr_f1:.4f}")
-        print(f"  Validation ({val_dir.name}): Loss={val_loss:.4f}, Acc={val_acc*100:.2f}%, Macro F1={val_f1:.4f}")
+        save_path = output_dir / f"{args.output_name}.pth"
+        best_val_f1 = -1.0
+        best_report = None
+        best_acc = 0.0
 
-        if val_f1 > best_val_f1:
-            best_val_f1 = val_f1
-            best_acc = val_acc
-            best_report = report
-            save_checkpoint(
-                model=model,
-                save_path=save_path,
-                architecture="mobilenet_v3_small",
-                class_names=CLASS_NAMES,
-                class_to_idx={name: i for i, name in enumerate(CLASS_NAMES)},
-                epoch=epoch,
-                metrics={"val_loss": val_loss, "val_acc": val_acc, "val_f1": val_f1},
-                train_mode="train_standard",
-                seed=args.seed,
-                extra={
-                    "selection_protocol": args.selection_protocol,
-                    "validation_cohort": val_dir.name,
-                    "warning": (
-                        "External cohort was used for model selection; "
-                        "this cohort cannot be considered an untouched final test."
-                        if args.selection_protocol == "external_val_selection" else "Internal development validation split."
-                    )
-                }
-            )
-            print(f"  --> Saved new best checkpoint to {save_path} (Val F1: {val_f1:.4f})")
+        for epoch in range(1, args.epochs + 1):
+            t0 = time.time()
+            print(f"\n--- Epoch [{epoch}/{args.epochs}] ---")
+            tr_loss, tr_acc, tr_f1 = train_one_epoch(model, train_loader, criterion, optimizer, device)
+            val_loss, val_acc, val_f1, report = evaluate_cohort(model, val_loader, criterion, device)
+            scheduler.step()
+            elapsed = time.time() - t0
 
-    # Final summary report
-    print("\n=================================================================")
-    print(f" VALIDATION PERFORMANCE SUMMARY (Protocol: {args.selection_protocol})")
-    print("=================================================================")
-    if best_report:
-        print(f"{'Class':<8} | {'Precision':<10} | {'Recall':<10} | {'F1-Score':<10} | {'Support':<8}")
-        print("-" * 55)
-        for cname in CLASS_NAMES:
-            c_p = best_report[cname]["precision"]
-            c_r = best_report[cname]["recall"]
-            c_f1 = best_report[cname]["f1-score"]
-            c_sup = int(best_report[cname]["support"])
-            print(f"{cname:<8} | {c_p:>9.4f}  | {c_r:>9.4f}  | {c_f1:>9.4f}  | {c_sup:>7}")
-        print("-" * 55)
-        print(f"ACCURACY: {best_acc*100:.2f}% | MACRO F1: {best_val_f1:.4f}")
+            print(f"Epoch [{epoch}/{args.epochs}] Completed in {elapsed/60:.2f}m")
+            print(f"  Training ({train_dir.name}): Loss={tr_loss:.4f}, Acc={tr_acc*100:.2f}%, Macro F1={tr_f1:.4f}")
+            print(f"  Validation ({val_dir.name}): Loss={val_loss:.4f}, Acc={val_acc*100:.2f}%, Macro F1={val_f1:.4f}")
 
-    results_json = exp_dir / f"{args.output_name}_results.json"
-    with open(results_json, "w", encoding="utf-8") as f:
-        json.dump({
-            "selection_protocol": args.selection_protocol,
-            "val_acc": best_acc,
-            "val_f1": best_val_f1,
-            "report": best_report,
-            "note": (
-                "External validation cohort used for model selection. Not an untouched test set."
-                if args.selection_protocol == "external_val_selection" else "Standard internal validation."
-            )
-        }, f, indent=2)
+            if tracker and tracker.enabled:
+                tracker.log_epoch_metrics(
+                    epoch=epoch,
+                    train_metrics={"loss": tr_loss, "accuracy": tr_acc, "macro_f1": tr_f1},
+                    val_metrics={"loss": val_loss, "accuracy": val_acc, "macro_f1": val_f1},
+                )
+
+            if val_f1 > best_val_f1:
+                best_val_f1 = val_f1
+                best_acc = val_acc
+                best_report = report
+                save_checkpoint(
+                    model=model,
+                    save_path=save_path,
+                    architecture="mobilenet_v3_small",
+                    class_names=CLASS_NAMES,
+                    class_to_idx={name: i for i, name in enumerate(CLASS_NAMES)},
+                    epoch=epoch,
+                    metrics={"val_loss": val_loss, "val_acc": val_acc, "val_f1": val_f1},
+                    train_mode="train_standard",
+                    seed=args.seed,
+                    extra={
+                        "selection_protocol": args.selection_protocol,
+                        "validation_cohort": val_dir.name,
+                        "warning": (
+                            "External cohort was used for model selection; "
+                            "this cohort cannot be considered an untouched final test."
+                            if args.selection_protocol == "external_val_selection" else "Internal development validation split."
+                        )
+                    }
+                )
+                print(f"  --> Saved new best checkpoint to {save_path} (Val F1: {val_f1:.4f})")
+
+        # Final summary report
+        print("\n=================================================================")
+        print(f" VALIDATION PERFORMANCE SUMMARY (Protocol: {args.selection_protocol})")
+        print("=================================================================")
+        if best_report:
+            print(f"{'Class':<8} | {'Precision':<10} | {'Recall':<10} | {'F1-Score':<10} | {'Support':<8}")
+            print("-" * 55)
+            for cname in CLASS_NAMES:
+                c_p = best_report[cname]["precision"]
+                c_r = best_report[cname]["recall"]
+                c_f1 = best_report[cname]["f1-score"]
+                c_sup = int(best_report[cname]["support"])
+                print(f"{cname:<8} | {c_p:>9.4f}  | {c_r:>9.4f}  | {c_f1:>9.4f}  | {c_sup:>7}")
+            print("-" * 55)
+            print(f"ACCURACY: {best_acc*100:.2f}% | MACRO F1: {best_val_f1:.4f}")
+
+        results_json = exp_dir / f"{args.output_name}_results.json"
+        with open(results_json, "w", encoding="utf-8") as f:
+            json.dump({
+                "selection_protocol": args.selection_protocol,
+                "val_acc": best_acc,
+                "val_f1": best_val_f1,
+                "report": best_report,
+                "note": (
+                    "External validation cohort used for model selection. Not an untouched test set."
+                    if args.selection_protocol == "external_val_selection" else "Standard internal validation."
+                )
+            }, f, indent=2)
+
+        if tracker and tracker.enabled:
+            tracker.log_artifact(results_json)
+            if best_report:
+                tracker.log_dict_artifact(best_report, f"reports/{args.output_name}_report.json")
+            if args.log_models_to_mlflow:
+                tracker.log_checkpoint(save_path)
 
 
 if __name__ == "__main__":

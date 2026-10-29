@@ -1,13 +1,16 @@
 """
 StainShift: Model Stress-Testing & Robustness Evaluation
 Quantifies model performance degradation under physical stain shifts and scanner variations.
+Supports optional MLflow tracking.
 """
 
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -20,6 +23,7 @@ from torch.utils.data import DataLoader
 from .dataset import CRCDataset, get_data_splits
 from .models import CLASS_NAMES, load_checkpoint
 from .stain_shift import STAIN_PROFILES
+from .tracking import MLflowTracker
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +103,7 @@ def run_stress_test(
     expected_arch: Optional[str] = "mobilenet_v3_small",
     allow_legacy: bool = True,
     dry_run: bool = False,
+    tracker: Optional[MLflowTracker] = None,
 ) -> Dict[str, Any]:
     """
     Stress-tests a model checkpoint across all benchmark stain profiles.
@@ -130,6 +135,15 @@ def run_stress_test(
         device=device,
         allow_legacy=allow_legacy,
     )
+
+    if tracker and tracker.enabled:
+        tracker.log_params({
+            "eval_checkpoint": str(ckpt_path),
+            "eval_provenance": ckpt_meta.get("provenance", "unknown"),
+            "eval_architecture": ckpt_meta.get("architecture", expected_arch),
+            "eval_device": str(device),
+            "eval_batch_size": batch_size,
+        })
 
     _, _, test_split = get_data_splits(data_path, splits_cache=splits_cache)
     file_paths = test_split["files"]
@@ -187,6 +201,14 @@ def run_stress_test(
         metrics["delta_f1"] = round(delta_f1, 4)
         metrics["prediction_flip_rate_pct"] = round(flip_rate, 2)
 
+        # Log to tracker
+        if tracker and tracker.enabled:
+            tracker.log_eval_metrics(profile_name, metrics)
+            tracker.log_dict_artifact(
+                metrics["classification_report"],
+                f"reports/classification_report_{profile_name}.json"
+            )
+
         # Do not keep raw large prediction list in saved JSON summary
         metrics.pop("predictions", None)
 
@@ -205,6 +227,8 @@ def run_stress_test(
         with open(out_p, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
         print(f"\nFull stress test report written to: {out_p}")
+        if tracker and tracker.enabled:
+            tracker.log_artifact(out_p)
 
     return results
 
@@ -220,16 +244,34 @@ if __name__ == "__main__":
     parser.add_argument("--allow_legacy", action="store_true", default=True, help="Allow loading legacy checkpoints")
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--dry-run", action="store_true", help="Validate setup without executing evaluation")
+    # MLflow arguments
+    parser.add_argument("--use_mlflow", action="store_true", help="Enable MLflow experiment tracking")
+    parser.add_argument("--mlflow_tracking_uri", type=str, default=os.getenv("MLFLOW_TRACKING_URI"), help="MLflow tracking URI")
+    parser.add_argument("--mlflow_experiment_name", type=str, default=os.getenv("MLFLOW_EXPERIMENT_NAME", "stainshift_benchmark"), help="MLflow experiment name")
+    parser.add_argument("--run_type", type=str, default="smoke_test", choices=["smoke_test", "full_experiment"], help="Label run as smoke_test or full_experiment")
     args = parser.parse_args()
 
-    run_stress_test(
-        checkpoint_path=args.checkpoint,
-        data_dir=args.data_dir,
-        splits_cache=args.splits_cache,
-        output_json=args.output_json,
-        batch_size=args.batch_size,
-        device=args.device,
-        expected_arch=args.arch,
-        allow_legacy=args.allow_legacy,
-        dry_run=args.dry_run,
-    )
+    tracker = None
+    if args.use_mlflow:
+        ckpt_stem = Path(args.checkpoint).stem
+        tracker = MLflowTracker(
+            enabled=True,
+            tracking_uri=args.mlflow_tracking_uri,
+            experiment_name=args.mlflow_experiment_name,
+            run_name=f"stress_test_{ckpt_stem}",
+            run_type=args.run_type,
+        )
+
+    with tracker if tracker else nullcontext():
+        run_stress_test(
+            checkpoint_path=args.checkpoint,
+            data_dir=args.data_dir,
+            splits_cache=args.splits_cache,
+            output_json=args.output_json,
+            batch_size=args.batch_size,
+            device=args.device,
+            expected_arch=args.arch,
+            allow_legacy=args.allow_legacy,
+            dry_run=args.dry_run,
+            tracker=tracker,
+        )

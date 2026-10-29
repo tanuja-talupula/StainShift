@@ -40,6 +40,9 @@ data/
 # Experiment outputs & local runs
 runs/
 local_results/
+mlruns/
+*.db
+mlflow.db
 
 # Testing & Coverage
 .pytest_cache/

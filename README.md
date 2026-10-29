@@ -123,7 +123,51 @@ Trains on `NCT-CRC-HE-100K-NONORM` and evaluates generalization on `CRC-VAL-HE-7
 
 ---
 
-## 6. Interactive Visualizer (Dashboard)
+## 6. Optional MLflow Experiment Tracking
+
+StainShift includes optional, manual experiment tracking using MLflow.
+Tracking is **disabled by default**, allowing scripts to execute without requiring an MLflow server or local database.
+
+### Enabling MLflow Tracking
+Pass `--use_mlflow` when executing training, evaluation, or the master experiment runner:
+```bash
+# Recommended: Local SQLite database store
+python run_experiments.py --use_mlflow --mlflow_tracking_uri sqlite:///mlflow.db --mlflow_experiment_name stainshift_benchmark --run_type smoke_test
+```
+
+### CLI Tracking Arguments
+- `--use_mlflow`: Enables manual tracking.
+- `--mlflow_tracking_uri`: Backend store URI (e.g. `sqlite:///mlflow.db` or environment variable `MLFLOW_TRACKING_URI`).
+- `--mlflow_experiment_name`: Experiment name in MLflow (default: `stainshift_benchmark`).
+- `--run_type`: Explicit tag: `smoke_test` or `full_experiment`.
+- `--log_models_to_mlflow`: Optional flag to log `.pth` checkpoint weights (disabled by default to prevent storage bloat).
+
+### Viewing Experiment Runs in MLflow UI
+Launch the interactive web UI:
+```bash
+mlflow ui --backend-store-uri sqlite:///mlflow.db
+```
+Then navigate in your browser to `http://127.0.0.1:5000`.
+
+### Persistence in Google Colab
+By default, files saved in Google Colab ephemeral disk (`/content`) are destroyed when the runtime disconnects.
+To persist your MLflow runs, SQLite database, and artifacts:
+1. Mount Google Drive:
+   ```python
+   from google.colab import drive
+   drive.mount('/content/drive')
+   ```
+2. Set the tracking URI to your Drive directory:
+   ```bash
+   python run_experiments.py --use_mlflow \
+       --mlflow_tracking_uri "sqlite:////content/drive/MyDrive/stainshift/mlflow.db" \
+       --mlflow_experiment_name "colab_benchmark"
+   ```
+This ensures runs, parameters, metrics, and JSON artifacts persist permanently in your Google Drive.
+
+---
+
+## 7. Interactive Visualizer (Dashboard)
 
 Launch the dashboard locally:
 ```bash

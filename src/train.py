@@ -1,6 +1,7 @@
 """
 StainShift: Training Pipeline
 Trains a histopathology patch classifier with standard or stain-augmented pipelines.
+Includes optional MLflow experiment tracking.
 """
 
 from __future__ import annotations
@@ -8,6 +9,8 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
+from contextlib import nullcontext
 from pathlib import Path
 import random
 import time
@@ -22,6 +25,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 
 from .dataset import build_dataloaders
 from .models import CLASS_NAMES, get_model, save_checkpoint
+from .tracking import MLflowTracker
 
 logger = logging.getLogger(__name__)
 
@@ -110,12 +114,12 @@ def run_training(
     device: str = "cpu",
     seed: int = 42,
     dry_run: bool = False,
+    tracker: Optional[MLflowTracker] = None,
+    log_models_to_mlflow: bool = False,
 ) -> Path:
     """
     Executes model training with complete reproducibility metadata.
-
-    Initializes best_val_f1 so the first valid epoch can be saved even if score is 0.0.
-    Stores full metadata in the saved checkpoint.
+    Supports optional MLflow tracking.
     """
     data_path = Path(data_dir)
     out_path = Path(output_dir)
@@ -130,6 +134,20 @@ def run_training(
             raise FileNotFoundError(f"Dataset directory not found: {data_path}")
         print(f"[DRY-RUN] Output checkpoint target: {best_model_path}")
         return best_model_path
+
+    if tracker and tracker.enabled:
+        tracker.log_params({
+            "model_name": model_name,
+            "architecture": arch,
+            "train_mode": train_mode,
+            "epochs": epochs,
+            "batch_size": batch_size,
+            "lr": lr,
+            "seed": seed,
+            "device": device,
+            "data_dir": str(data_path),
+            "splits_cache": str(splits_cache) if splits_cache else "None",
+        })
 
     set_seed(seed)
     dev = torch.device(device)
@@ -179,6 +197,13 @@ def run_training(
             f"Val Loss: {val_loss:.4f}, Acc: {val_acc*100:.2f}%, F1: {val_f1:.4f}"
         )
 
+        if tracker and tracker.enabled:
+            tracker.log_epoch_metrics(
+                epoch=epoch,
+                train_metrics={"loss": tr_loss, "accuracy": tr_acc, "macro_f1": tr_f1},
+                val_metrics={"loss": val_loss, "accuracy": val_acc, "macro_f1": val_f1},
+            )
+
         if val_f1 > best_val_f1:
             best_val_f1 = val_f1
             best_epoch = epoch
@@ -204,6 +229,11 @@ def run_training(
     with open(history_path, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2)
 
+    if tracker and tracker.enabled:
+        tracker.log_artifact(history_path)
+        if log_models_to_mlflow:
+            tracker.log_checkpoint(best_model_path)
+
     return best_model_path
 
 
@@ -227,19 +257,39 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--dry-run", action="store_true", help="Validate setup without training")
+    # MLflow arguments
+    parser.add_argument("--use_mlflow", action="store_true", help="Enable MLflow experiment tracking")
+    parser.add_argument("--mlflow_tracking_uri", type=str, default=os.getenv("MLFLOW_TRACKING_URI"), help="MLflow tracking URI")
+    parser.add_argument("--mlflow_experiment_name", type=str, default=os.getenv("MLFLOW_EXPERIMENT_NAME", "stainshift_benchmark"), help="MLflow experiment name")
+    parser.add_argument("--run_type", type=str, default="smoke_test", choices=["smoke_test", "full_experiment"], help="Label run as smoke_test or full_experiment")
+    parser.add_argument("--log_models_to_mlflow", action="store_true", help="Explicitly log checkpoint weights to MLflow")
     args = parser.parse_args()
 
-    run_training(
-        data_dir=args.data_dir,
-        splits_cache=args.splits_cache,
-        output_dir=args.output_dir,
-        model_name=args.model_name,
-        train_mode=args.train_mode,
-        arch=args.arch,
-        epochs=args.epochs,
-        batch_size=args.batch_size,
-        lr=args.lr,
-        device=args.device,
-        seed=args.seed,
-        dry_run=args.dry_run,
-    )
+    tracker = None
+    if args.use_mlflow:
+        tracker = MLflowTracker(
+            enabled=True,
+            tracking_uri=args.mlflow_tracking_uri,
+            experiment_name=args.mlflow_experiment_name,
+            run_name=f"train_{args.model_name}",
+            run_type=args.run_type,
+            log_checkpoints=args.log_models_to_mlflow,
+        )
+
+    with tracker if tracker else nullcontext():
+        run_training(
+            data_dir=args.data_dir,
+            splits_cache=args.splits_cache,
+            output_dir=args.output_dir,
+            model_name=args.model_name,
+            train_mode=args.train_mode,
+            arch=args.arch,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            lr=args.lr,
+            device=args.device,
+            seed=args.seed,
+            dry_run=args.dry_run,
+            tracker=tracker,
+            log_models_to_mlflow=args.log_models_to_mlflow,
+        )
