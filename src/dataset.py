@@ -1,179 +1,413 @@
 """
 StainShift: Histopathology Dataset Loader and Augmentations
 Handles dataset partitioning, standard transforms, stain augmentation,
-and synthetic stain shift evaluations for the CRC-VAL-HE-7K dataset.
+and synthetic stain shift evaluations for colorectal cancer histopathology patches.
 """
 
-import os
+from __future__ import annotations
+
 import json
+import logging
+from pathlib import Path
 import random
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 from PIL import Image
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 import torchvision.transforms as T
 
-from .stain_shift import MacenkoStainDecomposer, apply_stain_profile, STAIN_PROFILES
 from .models import CLASS_NAMES
+from .stain_shift import (
+    STAIN_PROFILES,
+    DegenerateTissueError,
+    InsufficientTissueError,
+    MacenkoStainDecomposer,
+    StainDecompositionError,
+    apply_stain_profile,
+)
 
+logger = logging.getLogger(__name__)
 
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
+
+# Standard supported transform modes
+SUPPORTED_TRANSFORM_MODES = [
+    "train_standard",          # Geometric augmentation only (flips, 90-degree rotations)
+    "train_stain_augmented",   # Geometric + physics-based Macenko stain perturbation
+    "stain_augmented",         # Backward-compatibility alias for train_stain_augmented
+    "eval_standard",           # Evaluation on unmodified original images
+    "eval",                    # Alias for eval_standard
+    "standard",                # Alias for eval_standard
+    "eval_reconstruction",     # Evaluation on deconvolution/reconstruction control
+    "eval_shifted",            # Evaluation under a designated stain profile
+]
 
 
 class CRCDataset(Dataset):
     """
     PyTorch Dataset for CRC Histopathology Patches.
-    Supports standard, stain-augmented, and stain-shifted evaluation pipelines.
+    Supports standard training, stain-augmented training, and controlled stain-shift evaluations.
     """
 
-    def __init__(self, file_paths, labels, transform_mode="standard", stain_profile="original"):
-        self.file_paths = file_paths
-        self.labels = labels
+    def __init__(
+        self,
+        file_paths: List[Union[str, Path]],
+        labels: List[int],
+        transform_mode: str = "eval_standard",
+        stain_profile: str = "original",
+        seed: Optional[int] = None,
+        fail_mode: str = "fallback_and_record",  # 'fallback_and_record' or 'raise'
+    ):
+        if transform_mode not in SUPPORTED_TRANSFORM_MODES:
+            raise ValueError(
+                f"Unsupported transform_mode: '{transform_mode}'. "
+                f"Supported modes: {SUPPORTED_TRANSFORM_MODES}"
+            )
+        if stain_profile not in STAIN_PROFILES:
+            raise ValueError(
+                f"Unknown stain profile: '{stain_profile}'. "
+                f"Available profiles: {list(STAIN_PROFILES.keys())}"
+            )
+
+        self.file_paths = [str(p) for p in file_paths]
+        self.labels = list(labels)
         self.transform_mode = transform_mode
         self.stain_profile = stain_profile
-        self.decomposer = MacenkoStainDecomposer() if transform_mode == "stain_augmented" or stain_profile != "original" else None
+        self.fail_mode = fail_mode
+        self.rng = random.Random(seed) if seed is not None else random.Random()
 
-        # Standard baseline normalization
+        # Initialize the Macenko decomposer whenever stain augmentation, reconstruction,
+        # or non-neutral shift evaluation is requested.
+        needs_decomposer = (
+            self.transform_mode in ("train_stain_augmented", "stain_augmented", "eval_reconstruction")
+            or (self.transform_mode == "eval_shifted" and self.stain_profile not in ("original", None))
+        )
+        self.decomposer = MacenkoStainDecomposer() if needs_decomposer else None
+
+        # Tracking transformation outcomes
+        self.transform_stats: Dict[str, Any] = {
+            "attempts": 0,
+            "successes": 0,
+            "neutral_skips": 0,
+            "probabilistic_skips": 0,
+            "failures": 0,
+            "failure_records": [],
+        }
+
+        # Baseline normalization transform
         self.base_tensor_transform = T.Compose([
             T.ToTensor(),
             T.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
         ])
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.file_paths)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, str]:
         img_path = self.file_paths[idx]
         label = self.labels[idx]
 
         # Load RGB image
-        with Image.open(img_path) as img:
-            img = img.convert("RGB")
+        try:
+            with Image.open(img_path) as img:
+                img = img.convert("RGB")
+        except Exception as err:
+            raise RuntimeError(f"Failed to read image at '{img_path}': {err}") from err
 
-        # Apply transforms based on mode
+        # 1. Standard training mode: Geometric only (flips and discrete 90-degree rotations)
         if self.transform_mode == "train_standard":
-            # Baseline data augmentation (geometric only)
-            if random.random() > 0.5:
+            if self.rng.random() > 0.5:
                 img = img.transpose(Image.FLIP_LEFT_RIGHT)
-            if random.random() > 0.5:
+            if self.rng.random() > 0.5:
                 img = img.transpose(Image.FLIP_TOP_BOTTOM)
-            rot = random.choice([0, 90, 180, 270])
+            rot = self.rng.choice([0, 90, 180, 270])
             if rot > 0:
                 img = img.rotate(rot)
             tensor = self.base_tensor_transform(img)
 
-        elif self.transform_mode == "train_stain_augmented":
-            # Geometric augmentation
-            if random.random() > 0.5:
+        # 2. Stain-augmented training mode: Geometric + Macenko perturbation
+        elif self.transform_mode in ("train_stain_augmented", "stain_augmented"):
+            # Geometric
+            if self.rng.random() > 0.5:
                 img = img.transpose(Image.FLIP_LEFT_RIGHT)
-            if random.random() > 0.5:
+            if self.rng.random() > 0.5:
                 img = img.transpose(Image.FLIP_TOP_BOTTOM)
-            rot = random.choice([0, 90, 180, 270])
+            rot = self.rng.choice([0, 90, 180, 270])
             if rot > 0:
                 img = img.rotate(rot)
 
-            # Stain Augmentation: random OD perturbation with 60% probability
+            # Stain Augmentation: OD perturbation with 60% probability
             img_np = np.array(img)
-            if random.random() < 0.60:
-                alpha_h = random.uniform(0.70, 1.40)
-                alpha_e = random.uniform(0.70, 1.40)
-                rot_deg = random.uniform(-4.0, 4.0)
+            self.transform_stats["attempts"] += 1
+
+            if self.rng.random() < 0.60:
+                alpha_h = self.rng.uniform(0.70, 1.40)
+                alpha_e = self.rng.uniform(0.70, 1.40)
+                rot_deg = self.rng.uniform(-4.0, 4.0)
+
+                # Ensure decomposer is present (guaranteed by __init__)
+                if self.decomposer is None:
+                    raise RuntimeError(
+                        f"Decomposer was not initialized for transform mode '{self.transform_mode}'. "
+                        "This is a programming defect that must not be swallowed."
+                    )
+
                 try:
-                    img_np = self.decomposer.perturb(img_np, alpha_h=alpha_h, alpha_e=alpha_e, stain_rot_deg=rot_deg)
-                except Exception:
-                    pass  # Fallback to original if singular matrix
+                    img_np = self.decomposer.perturb(
+                        img_np, alpha_h=alpha_h, alpha_e=alpha_e, stain_rot_deg=rot_deg
+                    )
+                    self.transform_stats["successes"] += 1
+                except (StainDecompositionError, InsufficientTissueError, DegenerateTissueError, ValueError) as err:
+                    self.transform_stats["failures"] += 1
+                    self.transform_stats["failure_records"].append({
+                        "file_path": img_path,
+                        "mode": self.transform_mode,
+                        "reason": str(err),
+                    })
+                    if self.fail_mode == "raise":
+                        raise
+                    # In fallback_and_record, image remains the geometrically transformed RGB patch
+                    logger.debug("Stain augmentation fallback on %s: %s", img_path, err)
+            else:
+                self.transform_stats["probabilistic_skips"] += 1
+
             tensor = self.base_tensor_transform(Image.fromarray(img_np))
 
-        elif self.transform_mode == "eval_shifted":
-            # Evaluation under a specific stain shift profile
+        # 3. Reconstruction-only evaluation control (isolating deconvolution loss)
+        elif self.transform_mode == "eval_reconstruction":
             img_np = np.array(img)
-            if self.stain_profile != "original":
+            self.transform_stats["attempts"] += 1
+            if self.decomposer is None:
+                raise RuntimeError("Decomposer not initialized for eval_reconstruction.")
+            try:
+                img_np = self.decomposer.reconstruct(img_np)
+                self.transform_stats["successes"] += 1
+            except (StainDecompositionError, InsufficientTissueError, DegenerateTissueError, ValueError) as err:
+                self.transform_stats["failures"] += 1
+                self.transform_stats["failure_records"].append({
+                    "file_path": img_path,
+                    "mode": self.transform_mode,
+                    "reason": str(err),
+                })
+                if self.fail_mode == "raise":
+                    raise
+            tensor = self.base_tensor_transform(Image.fromarray(img_np))
+
+        # 4. Shifted evaluation under designated stain profile
+        elif self.transform_mode == "eval_shifted":
+            img_np = np.array(img)
+            self.transform_stats["attempts"] += 1
+            if self.stain_profile == "original":
+                self.transform_stats["neutral_skips"] += 1
+                tensor = self.base_tensor_transform(img)
+            else:
                 try:
                     img_np = apply_stain_profile(img_np, self.stain_profile)
-                except Exception:
-                    pass
-            tensor = self.base_tensor_transform(Image.fromarray(img_np))
+                    self.transform_stats["successes"] += 1
+                except (StainDecompositionError, InsufficientTissueError, DegenerateTissueError, ValueError) as err:
+                    self.transform_stats["failures"] += 1
+                    self.transform_stats["failure_records"].append({
+                        "file_path": img_path,
+                        "mode": self.transform_mode,
+                        "stain_profile": self.stain_profile,
+                        "reason": str(err),
+                    })
+                    if self.fail_mode == "raise":
+                        raise
+                tensor = self.base_tensor_transform(Image.fromarray(img_np))
 
-        else:  # Standard eval (in-domain)
+        # 5. Standard in-domain unmodified evaluation
+        else:
             tensor = self.base_tensor_transform(img)
 
         return tensor, label, img_path
 
 
-def get_data_splits(data_dir: str, splits_cache: str = None, train_ratio=0.70, val_ratio=0.15, test_ratio=0.15, seed=42):
+def get_data_splits(
+    data_dir: Union[str, Path],
+    splits_cache: Optional[Union[str, Path]] = None,
+    train_ratio: float = 0.70,
+    val_ratio: float = 0.15,
+    test_ratio: float = 0.15,
+    seed: int = 42,
+    patient_grouping: bool = False,
+) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
     """
-    Creates or loads a stratified train / val / test split across all 9 classes.
-    """
-    if splits_cache and os.path.exists(splits_cache):
-        with open(splits_cache, "r") as f:
-            splits = json.load(f)
-        return splits["train"], splits["val"], splits["test"]
+    Creates or loads stratified train / val / test splits across all classes.
 
-    random.seed(seed)
-    np.random.seed(seed)
+    Ensures:
+    - Deterministic file sorting before random shuffling.
+    - Verified disjointness between train, val, and test splits.
+    - Rejection of empty splits.
+    - Path persistence supporting relative paths for portability.
+    """
+    data_path = Path(data_dir)
+    if not data_path.is_dir():
+        raise FileNotFoundError(f"Dataset directory does not exist: {data_path}")
+
+    # If cache exists and is valid, load it
+    if splits_cache:
+        cache_path = Path(splits_cache)
+        if cache_path.is_file():
+            with open(cache_path, "r", encoding="utf-8") as f:
+                cached = json.load(f)
+            train_files = [str(data_path / f) if not Path(f).is_absolute() else f for f in cached["train"]["files"]]
+            val_files = [str(data_path / f) if not Path(f).is_absolute() else f for f in cached["val"]["files"]]
+            test_files = [str(data_path / f) if not Path(f).is_absolute() else f for f in cached["test"]["files"]]
+
+            # Verify that cached files actually exist
+            missing = [f for f in train_files + val_files + test_files if not Path(f).is_file()]
+            if missing:
+                logger.warning(
+                    "Splits cache at %s contains %d missing files; regenerating split.",
+                    cache_path, len(missing)
+                )
+            else:
+                return (
+                    {"files": train_files, "labels": cached["train"]["labels"]},
+                    {"files": val_files, "labels": cached["val"]["labels"]},
+                    {"files": test_files, "labels": cached["test"]["labels"]},
+                )
 
     class_to_idx = {name: i for i, name in enumerate(CLASS_NAMES)}
-    class_files = {name: [] for name in CLASS_NAMES}
+    class_files: Dict[str, List[Path]] = {name: [] for name in CLASS_NAMES}
 
-    for fname in os.listdir(data_dir):
-        if not fname.endswith(".png"):
-            continue
-        cname = fname.split("-")[0]
+    # Deterministic file scanning
+    all_files = sorted(data_path.glob("*.png"))
+    if not all_files:
+        raise FileNotFoundError(f"No PNG files found in dataset directory '{data_path}'")
+
+    for fpath in all_files:
+        # Standard NCT/CRC format: <CLASS>-<IDENTIFIER>.png
+        cname = fpath.stem.split("-")[0]
         if cname in class_to_idx:
-            class_files[cname].append(os.path.join(data_dir, fname))
+            class_files[cname].append(fpath)
 
-    train_data = {"files": [], "labels": []}
-    val_data = {"files": [], "labels": []}
-    test_data = {"files": [], "labels": []}
+    # Validate that classes are represented
+    empty_classes = [c for c, fls in class_files.items() if len(fls) == 0]
+    if empty_classes:
+        logger.warning("Classes with zero files found in %s: %s", data_path, empty_classes)
 
-    for cname, files in sorted(class_files.items()):
-        random.shuffle(files)
+    rng = random.Random(seed)
+    train_data: Dict[str, List[Any]] = {"files": [], "labels": []}
+    val_data: Dict[str, List[Any]] = {"files": [], "labels": []}
+    test_data: Dict[str, List[Any]] = {"files": [], "labels": []}
+
+    for cname in sorted(class_files.keys()):
+        files = list(class_files[cname])
+        # Sort before shuffling to guarantee platform-independent determinism
+        files.sort()
+        rng.shuffle(files)
+
         n = len(files)
-        n_train = int(n * train_ratio)
-        n_val = int(n * val_ratio)
-
-        c_train = files[:n_train]
-        c_val = files[n_train:n_train + n_val]
-        c_test = files[n_train + n_val:]
+        if n >= 3:
+            n_val = max(1, int(n * val_ratio))
+            n_test = max(1, int(n * test_ratio))
+            n_train = max(1, n - n_val - n_test)
+            c_train = files[:n_train]
+            c_val = files[n_train:n_train + n_val]
+            c_test = files[n_train + n_val:]
+        else:
+            c_train = files[:1]
+            c_val = files[1:2]
+            c_test = files[2:]
 
         lbl = class_to_idx[cname]
 
-        train_data["files"].extend(c_train)
+        train_data["files"].extend([str(p) for p in c_train])
         train_data["labels"].extend([lbl] * len(c_train))
 
-        val_data["files"].extend(c_val)
+        val_data["files"].extend([str(p) for p in c_val])
         val_data["labels"].extend([lbl] * len(c_val))
 
-        test_data["files"].extend(c_test)
+        test_data["files"].extend([str(p) for p in c_test])
         test_data["labels"].extend([lbl] * len(c_test))
 
-    splits = {"train": train_data, "val": val_data, "test": test_data}
+    # Reject empty splits
+    if len(train_data["files"]) == 0 or len(val_data["files"]) == 0 or len(test_data["files"]) == 0:
+        raise ValueError(
+            f"Generated an empty split! Train: {len(train_data['files'])}, "
+            f"Val: {len(val_data['files'])}, Test: {len(test_data['files'])}"
+        )
 
+    # Disjointness validation (no sample leakage across partitions)
+    train_set = set(train_data["files"])
+    val_set = set(val_data["files"])
+    test_set = set(test_data["files"])
+
+    if train_set & val_set:
+        raise ValueError(f"Train and Val splits share {len(train_set & val_set)} samples!")
+    if train_set & test_set:
+        raise ValueError(f"Train and Test splits share {len(train_set & test_set)} samples!")
+    if val_set & test_set:
+        raise ValueError(f"Val and Test splits share {len(val_set & test_set)} samples!")
+
+    # Save cache with portable relative paths
     if splits_cache:
-        os.makedirs(os.path.dirname(splits_cache), exist_ok=True)
-        with open(splits_cache, "w") as f:
-            json.dump(splits, f, indent=2)
+        cache_path = Path(splits_cache)
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        rel_splits = {
+            "metadata": {
+                "dataset_name": data_path.name,
+                "seed": seed,
+                "train_ratio": train_ratio,
+                "val_ratio": val_ratio,
+                "test_ratio": test_ratio,
+                "num_samples": len(train_set) + len(val_set) + len(test_set),
+            },
+            "train": {
+                "files": [str(Path(f).relative_to(data_path)) if Path(f).is_relative_to(data_path) else f for f in train_data["files"]],
+                "labels": train_data["labels"]
+            },
+            "val": {
+                "files": [str(Path(f).relative_to(data_path)) if Path(f).is_relative_to(data_path) else f for f in val_data["files"]],
+                "labels": val_data["labels"]
+            },
+            "test": {
+                "files": [str(Path(f).relative_to(data_path)) if Path(f).is_relative_to(data_path) else f for f in test_data["files"]],
+                "labels": test_data["labels"]
+            },
+        }
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(rel_splits, f, indent=2)
 
     return train_data, val_data, test_data
 
 
 def build_dataloaders(
-    data_dir: str,
-    splits_cache: str,
+    data_dir: Union[str, Path],
+    splits_cache: Optional[Union[str, Path]] = None,
     batch_size: int = 32,
     num_workers: int = 0,
-    train_mode: str = "train_standard"
-):
-    """Builds PyTorch DataLoaders for train, val, and test."""
-    train_split, val_split, test_split = get_data_splits(data_dir, splits_cache)
+    train_mode: str = "train_standard",
+    seed: int = 42,
+) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    """Builds PyTorch DataLoaders for train, val, and test splits."""
+    train_split, val_split, test_split = get_data_splits(
+        data_dir, splits_cache=splits_cache, seed=seed
+    )
 
-    train_ds = CRCDataset(train_split["files"], train_split["labels"], transform_mode=train_mode)
-    val_ds = CRCDataset(val_split["files"], val_split["labels"], transform_mode="eval")
-    test_ds = CRCDataset(test_split["files"], test_split["labels"], transform_mode="eval")
+    train_ds = CRCDataset(
+        train_split["files"], train_split["labels"], transform_mode=train_mode, seed=seed
+    )
+    val_ds = CRCDataset(
+        val_split["files"], val_split["labels"], transform_mode="eval_standard", seed=seed + 1
+    )
+    test_ds = CRCDataset(
+        test_split["files"], test_split["labels"], transform_mode="eval_standard", seed=seed + 2
+    )
 
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers)
-    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    train_loader = DataLoader(
+        train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers
+    )
+    val_loader = DataLoader(
+        val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers
+    )
+    test_loader = DataLoader(
+        test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers
+    )
 
     return train_loader, val_loader, test_loader
