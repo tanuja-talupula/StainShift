@@ -30,7 +30,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.dataset import IMAGENET_MEAN, IMAGENET_STD
+from src.dataset import IMAGENET_MEAN, IMAGENET_STD, scan_dataset_files
 from src.models import CLASS_NAMES, CLASS_DESCRIPTIONS, get_model, save_checkpoint
 from src.tracking import MLflowTracker
 
@@ -56,15 +56,7 @@ class HistopathologyFolderDataset(Dataset):
         class_to_idx = {name: i for i, name in enumerate(CLASS_NAMES)}
         self.samples: List[Tuple[str, int]] = []
 
-        all_files = sorted(self.root_dir.glob("*.png"))
-        if not all_files:
-            raise FileNotFoundError(f"No PNG files found in {self.root_dir}")
-
-        by_class: Dict[str, List[Path]] = {name: [] for name in CLASS_NAMES}
-        for fpath in all_files:
-            cname = fpath.stem.split("-")[0]
-            if cname in class_to_idx:
-                by_class[cname].append(fpath)
+        by_class = scan_dataset_files(self.root_dir)
 
         # Use an isolated random generator instantiated once
         rng = np.random.default_rng(seed)

@@ -15,14 +15,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from sklearn.metrics import classification_report, accuracy_score, f1_score
+from sklearn.metrics import classification_report, accuracy_score, f1_score, confusion_matrix
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from .dataset import CRCDataset, get_data_splits
 from .models import CLASS_NAMES, load_checkpoint
-from .stain_shift import STAIN_PROFILES
+from .stain_shift import STAIN_PROFILES, DISTINCT_STAIN_PROFILES
 from .tracking import MLflowTracker
 
 logger = logging.getLogger(__name__)
@@ -82,11 +82,18 @@ def evaluate_stain_profile(
         zero_division=0
     )
 
+    cm = confusion_matrix(
+        all_targets,
+        all_preds,
+        labels=list(range(len(CLASS_NAMES)))
+    ).tolist()
+
     return {
         "accuracy": acc,
         "macro_f1": f1,
         "mean_confidence": mean_conf,
         "evaluated_count": len(all_preds),
+        "confusion_matrix": cm,
         "transform_stats": dict(dataset.transform_stats),
         "classification_report": report,
         "predictions": all_preds,
@@ -104,9 +111,10 @@ def run_stress_test(
     allow_legacy: bool = True,
     dry_run: bool = False,
     tracker: Optional[MLflowTracker] = None,
+    distinct_only: bool = True,
 ) -> Dict[str, Any]:
     """
-    Stress-tests a model checkpoint across all benchmark stain profiles.
+    Stress-tests a model checkpoint across benchmark stain profiles.
 
     Reports:
     - Reference baseline (exact original pixels)
@@ -136,19 +144,28 @@ def run_stress_test(
         allow_legacy=allow_legacy,
     )
 
+    model_prefix = ckpt_path.stem
     if tracker and tracker.enabled:
         tracker.log_params({
-            "eval_checkpoint": str(ckpt_path),
-            "eval_provenance": ckpt_meta.get("provenance", "unknown"),
-            "eval_architecture": ckpt_meta.get("architecture", expected_arch),
-            "eval_device": str(device),
-            "eval_batch_size": batch_size,
+            f"{model_prefix}_eval_checkpoint": str(ckpt_path),
+            f"{model_prefix}_eval_provenance": ckpt_meta.get("provenance", "unknown"),
+            f"{model_prefix}_eval_architecture": ckpt_meta.get("architecture", expected_arch),
+            f"{model_prefix}_eval_device": str(device),
+            f"{model_prefix}_eval_batch_size": batch_size,
         })
 
     _, _, test_split = get_data_splits(data_path, splits_cache=splits_cache)
     file_paths = test_split["files"]
     labels = test_split["labels"]
-    print(f"Evaluating across {len(file_paths)} test patches for {len(STAIN_PROFILES)} stain regimes...")
+
+    target_profiles = {
+        name: STAIN_PROFILES[name]
+        for name in (DISTINCT_STAIN_PROFILES if distinct_only else list(STAIN_PROFILES.keys()))
+    }
+    print(
+        f"Evaluating across {len(file_paths)} test patches for {len(target_profiles)} stain regimes "
+        f"({'8 distinct conditions' if distinct_only else '10 conditions including legacy aliases'})..."
+    )
 
     results: Dict[str, Any] = {
         "metadata": {
@@ -158,6 +175,7 @@ def run_stress_test(
             "dataset_dir": str(data_path),
             "test_sample_count": len(file_paths),
             "device": str(device),
+            "distinct_only": distinct_only,
         },
         "profiles": {}
     }
@@ -166,7 +184,7 @@ def run_stress_test(
     baseline_f1: Optional[float] = None
     baseline_preds: Optional[List[int]] = None
 
-    for profile_name, info in STAIN_PROFILES.items():
+    for profile_name, info in target_profiles.items():
         print(f"\nEvaluating Profile: [{profile_name}] - {info['description']}...")
         metrics = evaluate_stain_profile(
             model=model,
@@ -203,10 +221,10 @@ def run_stress_test(
 
         # Log to tracker
         if tracker and tracker.enabled:
-            tracker.log_eval_metrics(profile_name, metrics)
+            tracker.log_eval_metrics(profile_name, metrics, prefix=model_prefix)
             tracker.log_dict_artifact(
                 metrics["classification_report"],
-                f"reports/classification_report_{profile_name}.json"
+                f"reports/{model_prefix}_classification_report_{profile_name}.json"
             )
 
         # Do not keep raw large prediction list in saved JSON summary

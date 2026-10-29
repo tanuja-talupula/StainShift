@@ -69,6 +69,7 @@ class MLflowTracker:
         self.run_type = run_type
         self.log_checkpoints = log_checkpoints
         self._active_run = None
+        self._logged_params: Dict[str, Any] = {}
 
         if enabled and not MLFLOW_AVAILABLE:
             raise ImportError(
@@ -117,54 +118,68 @@ class MLflowTracker:
             name, self._active_run.info.run_id, self.experiment_name
         )
 
+    @property
+    def run_id(self) -> Optional[str]:
+        if self._active_run is not None:
+            return self._active_run.info.run_id
+        return None
+
     def end_run(self, status: str = "FINISHED") -> None:
         if not self.enabled or not self._active_run:
             return
         mlflow.end_run(status=status)
         self._active_run = None
 
-    def log_params(self, params: Dict[str, Any]) -> None:
-        if not self.enabled:
+    def log_params(self, params: Dict[str, Any], prefix: Optional[str] = None) -> None:
+        if not self.enabled or not self._active_run:
             return
         # Flatten and stringify complex types for MLflow compatibility
         clean_params = {}
         for k, v in params.items():
-            if isinstance(v, (int, float, str, bool)):
-                clean_params[k] = v
-            elif v is None:
-                clean_params[k] = "None"
-            else:
-                clean_params[k] = str(v)[:250]  # truncate long descriptions
-        mlflow.log_params(clean_params)
+            key = f"{prefix}_{k}" if prefix else str(k)
+            val = "None" if v is None else (v if isinstance(v, (int, float, str, bool)) else str(v)[:250])
+            if key in self._logged_params:
+                if self._logged_params[key] == val:
+                    continue
+                key = f"{key}_val"
+            clean_params[key] = val
+            self._logged_params[key] = val
+
+        if clean_params:
+            mlflow.log_params(clean_params)
 
     def log_epoch_metrics(
         self,
         epoch: int,
         train_metrics: Dict[str, float],
-        val_metrics: Dict[str, float]
+        val_metrics: Dict[str, float],
+        prefix: Optional[str] = None,
     ) -> None:
         """Logs train and val metrics for a training epoch."""
-        if not self.enabled:
+        if not self.enabled or not self._active_run:
             return
+        pfx = f"{prefix}/" if prefix else ""
         metrics = {}
         for k, v in train_metrics.items():
-            metrics[f"train/{k}"] = float(v)
+            metrics[f"{pfx}train/{k}"] = float(v)
         for k, v in val_metrics.items():
-            metrics[f"val/{k}"] = float(v)
+            metrics[f"{pfx}val/{k}"] = float(v)
         mlflow.log_metrics(metrics, step=int(epoch))
 
     def log_eval_metrics(
         self,
         profile_name: str,
         metrics: Dict[str, Any],
-        step: Optional[int] = None
+        step: Optional[int] = None,
+        prefix: Optional[str] = None,
     ) -> None:
         """
         Logs evaluation metrics under a dedicated stain profile prefix.
         Keeps original, reconstruction_only, and shift conditions distinct.
         """
-        if not self.enabled:
+        if not self.enabled or not self._active_run:
             return
+        pfx = f"{prefix}/" if prefix else ""
         clean_metrics = {}
         scalar_keys = [
             "accuracy", "macro_f1", "mean_confidence", "delta_acc_pct",
@@ -172,12 +187,12 @@ class MLflowTracker:
         ]
         for key in scalar_keys:
             if key in metrics and metrics[key] is not None:
-                clean_metrics[f"eval_{profile_name}/{key}"] = float(metrics[key])
+                clean_metrics[f"{pfx}eval_{profile_name}/{key}"] = float(metrics[key])
 
         if "transform_stats" in metrics:
             stats = metrics["transform_stats"]
-            clean_metrics[f"eval_{profile_name}/failures"] = int(stats.get("failures", 0))
-            clean_metrics[f"eval_{profile_name}/attempts"] = int(stats.get("attempts", 0))
+            clean_metrics[f"{pfx}eval_{profile_name}/failures"] = int(stats.get("failures", 0))
+            clean_metrics[f"{pfx}eval_{profile_name}/attempts"] = int(stats.get("attempts", 0))
 
         mlflow.log_metrics(clean_metrics, step=step)
 

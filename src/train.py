@@ -150,7 +150,7 @@ def run_training(
             "device": device,
             "data_dir": str(data_path),
             "splits_cache": str(splits_cache) if splits_cache else "None",
-        })
+        }, prefix=model_name)
 
     set_seed(seed)
     dev = torch.device(device)
@@ -206,6 +206,7 @@ def run_training(
                 epoch=epoch,
                 train_metrics={"loss": tr_loss, "accuracy": tr_acc, "macro_f1": tr_f1},
                 val_metrics={"loss": val_loss, "accuracy": val_acc, "macro_f1": val_f1},
+                prefix=model_name,
             )
 
         if val_f1 > best_val_f1:
@@ -234,9 +235,16 @@ def run_training(
         json.dump(history, f, indent=2)
 
     if tracker and tracker.enabled:
+        tracker.log_params({
+            f"{model_name}_best_epoch": best_epoch,
+            f"{model_name}_best_val_f1": round(best_val_f1, 4),
+            f"{model_name}_selection_rule": "highest_validation_macro_f1",
+            f"{model_name}_training_elapsed_seconds": round(total_time, 2),
+        })
         tracker.log_artifact(history_path)
         if log_models_to_mlflow:
             tracker.log_checkpoint(best_model_path)
+
 
     return best_model_path
 

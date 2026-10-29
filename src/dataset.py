@@ -44,6 +44,65 @@ SUPPORTED_TRANSFORM_MODES = [
     "eval_reconstruction",     # Evaluation on deconvolution/reconstruction control
     "eval_shifted",            # Evaluation under a designated stain profile
 ]
+VALID_IMAGE_EXTENSIONS = {".png", ".tif", ".tiff"}
+
+
+def scan_dataset_files(data_dir: Union[str, Path]) -> Dict[str, List[Path]]:
+    """
+    Scans a dataset directory for colorectal cancer histology patches.
+    Supports:
+    1. Nested class folders: data_dir/<CLASS>/*.(png|tif|tiff)
+    2. Flat named files: data_dir/<CLASS>-*.(png|tif|tiff)
+    3. Wrapped nested folders: data_dir/<ARCHIVE_NAME>/<CLASS>/*.(png|tif|tiff)
+
+    Returns a dict mapping canonical class names to sorted lists of Path objects.
+    Files are sorted deterministically using their POSIX relative path.
+    """
+    data_path = Path(data_dir).resolve()
+    if not data_path.is_dir():
+        raise FileNotFoundError(f"Dataset directory does not exist: {data_path}")
+
+    class_to_idx = {name: i for i, name in enumerate(CLASS_NAMES)}
+    class_files: Dict[str, List[Path]] = {name: [] for name in CLASS_NAMES}
+
+    # Discover candidate files recursively to support flat, nested, and wrapped archive layouts
+    candidates = [
+        p for p in data_path.rglob("*")
+        if p.is_file() and p.suffix.lower() in VALID_IMAGE_EXTENSIONS and not p.name.startswith(".")
+    ]
+
+    if not candidates:
+        raise FileNotFoundError(
+            f"No valid histology image files ({', '.join(sorted(VALID_IMAGE_EXTENSIONS))}) found in '{data_path}'"
+        )
+
+    for fpath in candidates:
+        cname = None
+        # Priority 1: Direct parent folder name
+        if fpath.parent.name in class_to_idx:
+            cname = fpath.parent.name
+        else:
+            # Priority 2: Stem prefix separated by '-' or '_'
+            stem_prefix = fpath.stem.split("-")[0].split("_")[0]
+            if stem_prefix in class_to_idx:
+                cname = stem_prefix
+
+        if cname is not None:
+            class_files[cname].append(fpath)
+
+    # Deterministically sort files within each class by relative POSIX path
+    for cname in class_files:
+        class_files[cname].sort(key=lambda p: p.relative_to(data_path).as_posix())
+
+    # Validate that at least one valid class was found
+    total_found = sum(len(fls) for fls in class_files.values())
+    if total_found == 0:
+        raise ValueError(
+            f"Found image files in '{data_path}', but none matched expected class names: {CLASS_NAMES}. "
+            "Ensure files are organized in class subfolders (e.g. data/TUM/patch.tif) or prefixed with class name (e.g. data/TUM-001.png)."
+        )
+
+    return class_files
 
 
 class CRCDataset(Dataset):
@@ -110,9 +169,15 @@ class CRCDataset(Dataset):
         img_path = self.file_paths[idx]
         label = self.labels[idx]
 
-        # Load RGB image
+        # Load standard 8-bit RGB/RGBA pathology image
         try:
             with Image.open(img_path) as img:
+                if img.mode not in ("RGB", "RGBA"):
+                    raise ValueError(
+                        f"Unsupported image mode '{img.mode}' in '{img_path}'. "
+                        "StainShift requires standard 8-bit RGB (or RGBA) pathology patches. "
+                        "Unsupported depths (e.g. 16-bit, palette, grayscale) are rejected."
+                    )
                 img = img.convert("RGB")
         except Exception as err:
             raise RuntimeError(f"Failed to read image at '{img_path}': {err}") from err
@@ -273,19 +338,9 @@ def get_data_splits(
                     {"files": test_files, "labels": cached["test"]["labels"]},
                 )
 
+    # Deterministic multi-layout file scanning
+    class_files = scan_dataset_files(data_path)
     class_to_idx = {name: i for i, name in enumerate(CLASS_NAMES)}
-    class_files: Dict[str, List[Path]] = {name: [] for name in CLASS_NAMES}
-
-    # Deterministic file scanning
-    all_files = sorted(data_path.glob("*.png"))
-    if not all_files:
-        raise FileNotFoundError(f"No PNG files found in dataset directory '{data_path}'")
-
-    for fpath in all_files:
-        # Standard NCT/CRC format: <CLASS>-<IDENTIFIER>.png
-        cname = fpath.stem.split("-")[0]
-        if cname in class_to_idx:
-            class_files[cname].append(fpath)
 
     # Validate that classes are represented
     empty_classes = [c for c, fls in class_files.items() if len(fls) == 0]

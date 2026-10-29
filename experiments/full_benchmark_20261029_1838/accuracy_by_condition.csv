@@ -1,0 +1,9 @@
+condition,baseline_acc,baseline_drop_pct,robust_acc,robust_drop_pct,recovery_pct
+original,99.91,0.0,98.79,0.0,-1.11
+reconstruction_only,33.89,-66.02,97.68,-1.11,63.79
+heavy_hematoxylin,32.4,-67.5,96.94,-1.86,64.53
+heavy_eosin,28.97,-70.94,96.29,-2.51,67.32
+pale_understained,34.73,-65.18,96.75,-2.04,62.02
+dark_overstained,31.94,-67.97,96.47,-2.32,64.53
+synthetic_warm_shift,31.57,-68.34,94.8,-3.99,63.23
+synthetic_cool_shift,36.3,-63.6,96.38,-2.41,60.07

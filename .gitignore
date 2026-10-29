@@ -29,6 +29,7 @@ ENV/
 # PyTorch / Models / Checkpoints (preserve checked-in repo files if any, ignore new local weights)
 *.pth
 *.pt
+!models/full_benchmark_20261029_1838/*.pth
 torch_cache/
 .cache/
 
@@ -41,6 +42,9 @@ data/
 runs/
 local_results/
 mlruns/
+mlflow_artifacts/
+smoke_test_experiments/
+smoke_test_models/
 *.db
 mlflow.db
 
@@ -53,3 +57,10 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+

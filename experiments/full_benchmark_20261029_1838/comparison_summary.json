@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "baseline_checkpoint": "models/full_benchmark_20261029_1838/baseline.pth",
+    "robust_checkpoint": "models/full_benchmark_20261029_1838/robust_stain_aug.pth",
+    "checkpoint_policy": "eval_only",
+    "architecture": "mobilenet_v3_small",
+    "seed": 42,
+    "device": "mps",
+    "distinct_only": true
+  },
+  "profiles": {
+    "original": {
+      "baseline_acc": 99.91,
+      "baseline_drop": 0.0,
+      "robust_acc": 98.79,
+      "robust_drop": 0.0,
+      "recovery": -1.11,
+      "description": "original"
+    },
+    "reconstruction_only": {
+      "baseline_acc": 33.89,
+      "baseline_drop": -66.02,
+      "robust_acc": 97.68,
+      "robust_drop": -1.11,
+      "recovery": 63.79,
+      "description": "reconstruction_only"
+    },
+    "heavy_hematoxylin": {
+      "baseline_acc": 32.4,
+      "baseline_drop": -67.5,
+      "robust_acc": 96.94,
+      "robust_drop": -1.86,
+      "recovery": 64.53,
+      "description": "heavy_hematoxylin"
+    },
+    "heavy_eosin": {
+      "baseline_acc": 28.97,
+      "baseline_drop": -70.94,
+      "robust_acc": 96.29,
+      "robust_drop": -2.51,
+      "recovery": 67.32,
+      "description": "heavy_eosin"
+    },
+    "pale_understained": {
+      "baseline_acc": 34.73,
+      "baseline_drop": -65.18,
+      "robust_acc": 96.75,
+      "robust_drop": -2.04,
+      "recovery": 62.02,
+      "description": "pale_understained"
+    },
+    "dark_overstained": {
+      "baseline_acc": 31.94,
+      "baseline_drop": -67.97,
+      "robust_acc": 96.47,
+      "robust_drop": -2.32,
+      "recovery": 64.53,
+      "description": "dark_overstained"
+    },
+    "synthetic_warm_shift": {
+      "baseline_acc": 31.57,
+      "baseline_drop": -68.34,
+      "robust_acc": 94.8,
+      "robust_drop": -3.99,
+      "recovery": 63.23,
+      "description": "synthetic_warm_shift"
+    },
+    "synthetic_cool_shift": {
+      "baseline_acc": 36.3,
+      "baseline_drop": -63.6,
+      "robust_acc": 96.38,
+      "robust_drop": -2.41,
+      "recovery": 60.07,
+      "description": "synthetic_cool_shift"
+    }
+  }
+}

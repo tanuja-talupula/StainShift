@@ -387,6 +387,14 @@ STAIN_PROFILES: Dict[str, Dict[str, Any]] = {
     }
 }
 
+LEGACY_PROFILE_ALIASES: Dict[str, str] = {
+    "scanner_warm_shift": "synthetic_warm_shift",
+    "scanner_cool_shift": "synthetic_cool_shift",
+}
+
+DISTINCT_STAIN_PROFILES: List[str] = [p for p in STAIN_PROFILES if p not in LEGACY_PROFILE_ALIASES]
+
+
 
 def apply_stain_profile(img_rgb: np.ndarray, profile_name: str) -> np.ndarray:
     """

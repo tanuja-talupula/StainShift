@@ -1,0 +1,272 @@
+{
+  "baseline_mps": {
+    "model_name": "baseline",
+    "environment": {
+      "os": "Darwin",
+      "os_release": "25.6.0",
+      "architecture": "arm64",
+      "python_version": "3.13.2",
+      "torch_version": "2.15.0",
+      "torchvision_version": "0.29.2",
+      "device": "mps",
+      "mps_available": true,
+      "cuda_available": false
+    },
+    "model_forward_batch1": {
+      "timing_boundary": "model_forward_only",
+      "boundary_description": "Pure model forward pass on pre-loaded device tensor with hardware sync",
+      "batch_size": 1,
+      "image_size": [
+        224,
+        224
+      ],
+      "warm_up_calls": 20,
+      "timed_calls": 100,
+      "statistics": {
+        "mean_ms": 3.9081,
+        "std_ms": 0.3394,
+        "median_ms": 3.812,
+        "p95_ms": 4.5415,
+        "min_ms": 3.5468,
+        "max_ms": 5.185
+      }
+    },
+    "preprocessing_inclusive_original": {
+      "timing_boundary": "preprocessing_inclusive_local_inference",
+      "boundary_description": "PIL file read + optical density stain shift + tensor transform + host-to-device transfer + model forward + device sync",
+      "stain_profile": "original",
+      "batch_size": 1,
+      "unique_images_tested": 1077,
+      "warm_up_calls": 20,
+      "timed_calls": 100,
+      "failures_encountered": 0,
+      "failure_reasons": [],
+      "statistics": {
+        "mean_ms": 5.9932,
+        "std_ms": 0.7224,
+        "median_ms": 5.7933,
+        "p95_ms": 7.1642,
+        "min_ms": 4.759,
+        "max_ms": 8.2788
+      }
+    },
+    "preprocessing_inclusive_heavy_hematoxylin": {
+      "timing_boundary": "preprocessing_inclusive_local_inference",
+      "boundary_description": "PIL file read + optical density stain shift + tensor transform + host-to-device transfer + model forward + device sync",
+      "stain_profile": "heavy_hematoxylin",
+      "batch_size": 1,
+      "unique_images_tested": 1077,
+      "warm_up_calls": 20,
+      "timed_calls": 100,
+      "failures_encountered": 0,
+      "failure_reasons": [],
+      "statistics": {
+        "mean_ms": 11.5275,
+        "std_ms": 4.7575,
+        "median_ms": 10.96,
+        "p95_ms": 11.7884,
+        "min_ms": 10.0109,
+        "max_ms": 58.2356
+      }
+    },
+    "batched_throughput": {
+      "timing_boundary": "batched_model_throughput",
+      "batch_size": 16,
+      "image_size": [
+        224,
+        224
+      ],
+      "warm_up_calls": 20,
+      "timed_calls": 100,
+      "ms_per_batch": {
+        "mean_ms": 12.1314,
+        "std_ms": 4.9739,
+        "median_ms": 11.4669,
+        "p95_ms": 13.0,
+        "min_ms": 10.9498,
+        "max_ms": 59.9397
+      },
+      "throughput_samples_per_second": 1318.89
+    }
+  },
+  "robust_stain_aug_mps": {
+    "model_name": "robust_stain_aug",
+    "environment": {
+      "os": "Darwin",
+      "os_release": "25.6.0",
+      "architecture": "arm64",
+      "python_version": "3.13.2",
+      "torch_version": "2.15.0",
+      "torchvision_version": "0.29.2",
+      "device": "mps",
+      "mps_available": true,
+      "cuda_available": false
+    },
+    "model_forward_batch1": {
+      "timing_boundary": "model_forward_only",
+      "boundary_description": "Pure model forward pass on pre-loaded device tensor with hardware sync",
+      "batch_size": 1,
+      "image_size": [
+        224,
+        224
+      ],
+      "warm_up_calls": 20,
+      "timed_calls": 100,
+      "statistics": {
+        "mean_ms": 3.6946,
+        "std_ms": 0.1761,
+        "median_ms": 3.6741,
+        "p95_ms": 4.0129,
+        "min_ms": 3.372,
+        "max_ms": 4.4878
+      }
+    },
+    "preprocessing_inclusive_original": {
+      "timing_boundary": "preprocessing_inclusive_local_inference",
+      "boundary_description": "PIL file read + optical density stain shift + tensor transform + host-to-device transfer + model forward + device sync",
+      "stain_profile": "original",
+      "batch_size": 1,
+      "unique_images_tested": 1077,
+      "warm_up_calls": 20,
+      "timed_calls": 100,
+      "failures_encountered": 0,
+      "failure_reasons": [],
+      "statistics": {
+        "mean_ms": 5.7742,
+        "std_ms": 1.7759,
+        "median_ms": 5.5643,
+        "p95_ms": 6.4892,
+        "min_ms": 4.5434,
+        "max_ms": 22.6884
+      }
+    },
+    "preprocessing_inclusive_heavy_hematoxylin": {
+      "timing_boundary": "preprocessing_inclusive_local_inference",
+      "boundary_description": "PIL file read + optical density stain shift + tensor transform + host-to-device transfer + model forward + device sync",
+      "stain_profile": "heavy_hematoxylin",
+      "batch_size": 1,
+      "unique_images_tested": 1077,
+      "warm_up_calls": 20,
+      "timed_calls": 100,
+      "failures_encountered": 0,
+      "failure_reasons": [],
+      "statistics": {
+        "mean_ms": 11.0661,
+        "std_ms": 0.4268,
+        "median_ms": 11.0213,
+        "p95_ms": 11.8868,
+        "min_ms": 10.2275,
+        "max_ms": 12.5728
+      }
+    },
+    "batched_throughput": {
+      "timing_boundary": "batched_model_throughput",
+      "batch_size": 16,
+      "image_size": [
+        224,
+        224
+      ],
+      "warm_up_calls": 20,
+      "timed_calls": 100,
+      "ms_per_batch": {
+        "mean_ms": 11.7677,
+        "std_ms": 4.3492,
+        "median_ms": 11.3403,
+        "p95_ms": 11.4656,
+        "min_ms": 10.9644,
+        "max_ms": 54.829
+      },
+      "throughput_samples_per_second": 1359.65
+    }
+  },
+  "baseline_cpu": {
+    "model_name": "baseline_cpu",
+    "environment": {
+      "os": "Darwin",
+      "os_release": "25.6.0",
+      "architecture": "arm64",
+      "python_version": "3.13.2",
+      "torch_version": "2.15.0",
+      "torchvision_version": "0.29.2",
+      "device": "cpu",
+      "mps_available": true,
+      "cuda_available": false
+    },
+    "model_forward_batch1": {
+      "timing_boundary": "model_forward_only",
+      "boundary_description": "Pure model forward pass on pre-loaded device tensor with hardware sync",
+      "batch_size": 1,
+      "image_size": [
+        224,
+        224
+      ],
+      "warm_up_calls": 10,
+      "timed_calls": 30,
+      "statistics": {
+        "mean_ms": 41.0134,
+        "std_ms": 1.7544,
+        "median_ms": 41.3928,
+        "p95_ms": 42.5564,
+        "min_ms": 34.5208,
+        "max_ms": 43.0251
+      }
+    },
+    "preprocessing_inclusive_original": {
+      "timing_boundary": "preprocessing_inclusive_local_inference",
+      "boundary_description": "PIL file read + optical density stain shift + tensor transform + host-to-device transfer + model forward + device sync",
+      "stain_profile": "original",
+      "batch_size": 1,
+      "unique_images_tested": 1077,
+      "warm_up_calls": 10,
+      "timed_calls": 30,
+      "failures_encountered": 0,
+      "failure_reasons": [],
+      "statistics": {
+        "mean_ms": 39.2579,
+        "std_ms": 4.2854,
+        "median_ms": 41.0601,
+        "p95_ms": 42.237,
+        "min_ms": 28.8905,
+        "max_ms": 44.7961
+      }
+    },
+    "preprocessing_inclusive_heavy_hematoxylin": {
+      "timing_boundary": "preprocessing_inclusive_local_inference",
+      "boundary_description": "PIL file read + optical density stain shift + tensor transform + host-to-device transfer + model forward + device sync",
+      "stain_profile": "heavy_hematoxylin",
+      "batch_size": 1,
+      "unique_images_tested": 1077,
+      "warm_up_calls": 10,
+      "timed_calls": 30,
+      "failures_encountered": 0,
+      "failure_reasons": [],
+      "statistics": {
+        "mean_ms": 48.1326,
+        "std_ms": 2.1706,
+        "median_ms": 47.5305,
+        "p95_ms": 50.4767,
+        "min_ms": 46.1356,
+        "max_ms": 58.4043
+      }
+    },
+    "batched_throughput": {
+      "timing_boundary": "batched_model_throughput",
+      "batch_size": 16,
+      "image_size": [
+        224,
+        224
+      ],
+      "warm_up_calls": 10,
+      "timed_calls": 30,
+      "ms_per_batch": {
+        "mean_ms": 483.0645,
+        "std_ms": 12.5583,
+        "median_ms": 479.9295,
+        "p95_ms": 509.7527,
+        "min_ms": 474.6511,
+        "max_ms": 535.0148
+      },
+      "throughput_samples_per_second": 33.12
+    }
+  }
+}

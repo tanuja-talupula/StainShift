@@ -1,228 +1,201 @@
-# 🔬 StainShift: Histopathology Stain Domain Shift Benchmark
+# 🔬 StainShift: Histopathology Stain Domain Shift AI Application & Benchmark
 
-> **Scientific Scope:** *Investigating classifier behavior under synthetic H&E optical density perturbations.*
+> **Scientific Scope:** *Physics-informed histopathology stain normalization and robustness benchmark for colorectal cancer classification.*
 >
-> ⚠️ **Non-Clinical Research Disclaimer:** StainShift is an exploratory research engineering toolkit. It is **not** a medical device, diagnostic system, or clinical decision support system. Softmax outputs represent model score distributions and must not be interpreted as calibrated clinical certainty or evidence of real-world multi-scanner robustness.
+> ⚠️ **Non-Clinical Research Disclaimer:** StainShift is an exploratory research engineering prototype. It is **not** a certified medical device, diagnostic system, or clinical decision support software. Softmax probability outputs represent model scoring distributions across 9 research classes and must never be interpreted as clinical diagnoses or medical advice.
 
 ---
 
-## 1. Overview & Research Scope
+## 1. Application Overview
 
-StainShift models how deep convolutional neural networks respond to synthetic alterations in Hematoxylin and Eosin dye concentrations and stain vector angles using Beer-Lambert optical density deconvolution (Macenko et al., 2009).
+StainShift is a full-stack, user-facing biomedical AI application that accepts uploaded histopathology image patches, simulates physical Hematoxylin and Eosin (H&E) stain variations in Beer-Lambert optical density space, and executes real model inference using pre-trained PyTorch neural networks.
 
-### Key Scientific Limitations
-1. **Synthetic vs. Real-World Domain Shifts:** Synthetic Beer-Lambert scaling and 2D rotations provide controllable mathematical perturbations. They **do not** fully capture complex non-linear optical artifacts, slide preparation differences, microtome section thickness variations, illumination spectral differences, or scanner sensor response curves.
-2. **Patch-Level vs. Patient-Level Splitting:** When metadata for patient slide IDs is not available, random splitting operates at the tile level. While tile disjointness is strictly enforced, intra-patient correlation can exist across tiles from the same subject. Grouped splitting should be used whenever slide/patient IDs are provided.
-3. **Historical vs. Verified Checkpoints:** Prior checkpoints produced before the repair of the augmentation pipeline suffered from silent decomposer fallback. Any historical JSON results in `experiments/` represent unverified baseline records; models must be retrained with the corrected pipeline to validate true stain-augmented robustness.
+### Core Capabilities
+1. **Interactive AI Workspace**: Drag-and-drop support for single patches, multiple image files, and whole dataset ZIP archives (`.png`, `.jpg`, `.jpeg`, `.tif`, `.tiff`, `.zip`).
+2. **Real Model Inference**: Powered directly by verified PyTorch checkpoints (`MobileNetV3-Small`) trained on the CRC-VAL-HE-7K benchmark.
+3. **Dual Model Modes**:
+   - **Baseline Model**: Trained with standard empirical risk minimization and geometric augmentations (collapses under stain shift).
+   - **Stain-Robust Model**: Trained with physics-based Macenko Beer-Lambert dye perturbation augmentation (maintains high accuracy across shifts).
+   - **Side-by-Side Comparison**: Concurrently runs both models on the identical shifted image and automatically detects prediction flips.
+4. **Physics-Informed Stain Variations**:
+   - `original`: Native unperturbed patch.
+   - `reconstruction_only`: Macenko deconvolution control (inversion loss baseline).
+   - `heavy_hematoxylin`: Dark hyperchromatic nuclei bias ($\alpha_H = 1.65, \alpha_E = 0.85$).
+   - `heavy_eosin`: Vivid pink cytoplasm and stroma dominance ($\alpha_H = 0.75, \alpha_E = 1.65$).
+   - `pale_understained`: Weak optical density and low dye absorption.
+   - `dark_overstained`: High global dye absorption.
+   - `synthetic_warm_shift` & `synthetic_cool_shift`: Complex optical rotations ($\pm 8^\circ$).
+5. **Interactive Intensity Slider**: Continuous perturbation scaling from $0.0\text{x}$ to $2.0\text{x}$ ($1.0\text{x}$ corresponds to calibrated benchmark profiles).
+6. **9-Class Probability Distributions**: Full softmax breakdowns across ADI, BACK, DEB, LYM, MUC, MUS, NORM, STR, and TUM.
+7. **Batch Predictions & CSV Export**: Download RFC-4180 compliant CSV reports containing predictions, confidence scores, probability vectors, and hardware latency.
 
 ---
 
-## 2. Dataset Acquisition & Expected Structure
+## 2. Architecture & Deployment Strategy
 
-StainShift supports the open-access colorectal cancer histopathology benchmarks from Kather et al. ([Zenodo 1214456](https://doi.org/10.5281/zenodo.1214456) & [Zenodo 1214456](https://doi.org/10.5281/zenodo.1214456)):
-- `CRC-VAL-HE-7K`: 7,180 non-overlapping tissue tiles ($224 \times 224$ px at $0.5\,\mu\text{m/px}$) across 9 tissue classes from the DACHS cohort.
-- `NCT-CRC-HE-100K-NONORM`: 100,000 multi-center tiles from the NCT cohort without stain normalization.
-
-### Expected Directory Hierarchy
 ```
-StainShift/
-├── app.py                      # Interactive Streamlit dashboard
-├── run_experiments.py          # Master runner for training & stress-testing
-├── train_100k_val_7k.py        # Cross-cohort 100K training & 7K validation workflow
-├── requirements.txt            # Pinned runtime dependencies
-├── requirements-dev.txt        # Development and testing dependencies
-├── pyproject.toml              # Build specification and pytest configuration
-├── data/                       # Local dataset directory (not tracked in git)
-│   ├── CRC-VAL-HE-7K-png/      # <CLASS>-<IDENTIFIER>.png patches
-│   └── splits.json             # Stratified split manifest (created automatically)
-├── models/                     # Checkpoint directory
-│   ├── baseline.pth            # Standard training checkpoint
-│   └── robust_stain_aug.pth    # Stain-augmented checkpoint
-├── experiments/                # Evaluation output reports and summaries
-├── src/                        # Core package
-│   ├── dataset.py              # CRCDataset & stratified partition logic
-│   ├── models.py               # Model architectures and metadata checkpoint I/O
-│   ├── stain_shift.py          # Macenko deconvolution, Reinhard transfer, presets
-│   ├── train.py                # Isolated training loop with metadata tracking
-│   └── evaluate.py             # Stress-testing, metrics, and failure auditing
-└── tests/                      # Comprehensive engineering test suite
+                          ┌─────────────────────────────────────────────────────┐
+                          │                 Client Web Browser                  │
+                          │   (Next.js 14 App Router, Tailwind CSS, Lucide)     │
+                          └──────────┬───────────────────────────────▲──────────┘
+                                     │                               │
+                      POST /predict  │ Multipart Form                │ Base64 Previews
+                      GET /health    │ (Images / ZIP)                │ Softmax Probabilities
+                                     ▼                               │
+                          ┌──────────────────────────────────────────┴──────────┐
+                          │               FastAPI Inference API                 │
+                          │        (Python 3.11+, PyTorch 2.6, PIL)             │
+                          ├─────────────────────────────────────────────────────┤
+                          │  • Content-based Image Validation (RGB/RGBA 8-bit)  │
+                          │  • Zip-Slip & Zip-Bomb Memory Protection            │
+                          │  • Macenko Beer-Lambert Optical Density Decomposer  │
+                          │  • MobileNetV3-Small Checkpoints (baseline, robust) │
+                          │  • Hardware Accelerator Synchronization (MPS/CPU)   │
+                          └─────────────────────────────────────────────────────┘
+```
+
+### Production Architecture
+- **Frontend**: Next.js static export (`output: 'export'`) hosted with infinite scalability and zero cold-starts on **Vercel**.
+- **Backend**: FastAPI Python service running in a containerized environment (Render, Railway, Fly.io, or AWS/GCP) where PyTorch (850+ MB) and trained checkpoints are natively supported.
+- **Frontend-to-Backend Connection**: HTTPS REST API with configurable `NEXT_PUBLIC_API_URL` and CORS protection.
+
+---
+
+## 3. Directory Structure
+
+```
+stainshift/
+├── api/                                # FastAPI inference backend
+│   ├── __init__.py
+│   ├── main.py                         # REST API endpoints & CORS configuration
+│   ├── inference.py                    # PyTorch model loader, transforms, and ZIP parser
+│   └── schemas.py                      # Pydantic request/response data contracts
+├── website/                            # Next.js 14 Frontend Application
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── page.tsx                # Interactive AI Workspace (Primary Landing)
+│   │   │   ├── dashboard/page.tsx      # Verified Stage B Benchmark Dashboard
+│   │   │   ├── demo/page.tsx           # Precomputed 72-Patch Option B Explorer
+│   │   │   ├── methodology/page.tsx    # Optical density physics & SVD math
+│   │   │   ├── limitations/page.tsx    # Scientific caveats & single-cohort bounds
+│   │   │   └── reproduction/page.tsx   # Environment configs & CLI commands
+│   │   ├── components/workspace/       # Uploader, ModelSelector, StainControls, Tables
+│   │   ├── components/charts/          # Accessible SVG charts with HTML table alternatives
+│   │   └── lib/types.ts                # TypeScript data interfaces
+│   ├── public/                         # Public static results and demo patches
+│   ├── package.json
+│   └── next.config.mjs                 # Static export configuration
+├── models/full_benchmark_20261029_1838/
+│   ├── baseline.pth                    # Authoritative baseline model checkpoint
+│   └── robust_stain_aug.pth            # Authoritative stain-robust model checkpoint
+├── data/CRC-VAL-HE-7K/                 # Local 7,180-patch dataset (DACHS cohort)
+├── src/                                # Core scientific library
+│   ├── dataset.py                      # Image loaders, Pillow transforms, and split logic
+│   ├── models.py                       # Neural network architectures & checkpoint I/O
+│   └── stain_shift.py                  # Macenko deconvolution & Reinhard color transfer
+├── tests/                              # Comprehensive test suite (74 tests)
+│   ├── test_api.py                     # API contracts, file parsing, and parity tests
+│   └── ...                             # Mathematical and benchmark regression tests
+├── Dockerfile                          # Container specification for Python inference API
+├── Procfile                            # PaaS process file (Render / Railway)
+├── requirements.txt                    # Pinned runtime dependencies
+└── vercel.json                         # Vercel deployment specification
 ```
 
 ---
 
-## 3. Installation & Verification
+## 4. Local Development Quickstart
 
-### Setup
+### Prerequisites
+- Python 3.10+ (with `.venv` activated)
+- Node.js 18+ and npm
+
+### 1. Launch the FastAPI Backend
 ```bash
-git clone https://github.com/tanuja-talupula/StainShift.git
-cd StainShift
-
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements-dev.txt
+# From repository root
+uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
+```
+Verify the backend is live:
+```bash
+curl http://127.0.0.1:8000/health
 ```
 
-### Run Automated Test Suite
-The test suite validates data loaders, exact neutral controls, loud failure handling, checkpoint loading, and CLI flags using tiny synthetic fixtures (no external downloads or GPUs required):
+### 2. Launch the Next.js Frontend
+```bash
+cd website
+npm install
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser. The backend indicator will illuminate green: **AI Models Ready (MPS/CPU)**.
+
+---
+
+## 5. API Reference
+
+### `GET /health`
+Returns backend status, active compute device (`mps`, `cuda`, `cpu`), and loaded models.
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "device": "mps",
+  "models_available": {
+    "baseline": true,
+    "robust_stain_aug": true
+  },
+  "supported_formats": [".jpeg", ".jpg", ".png", ".tif", ".tiff", ".zip"],
+  "supported_conditions": ["original", "reconstruction_only", "heavy_hematoxylin", "heavy_eosin", "pale_understained", "dark_overstained", "synthetic_warm_shift", "synthetic_cool_shift"]
+}
+```
+
+### `POST /predict`
+Executes physics-based stain shift and model inference.
+- **Form Parameters**:
+  - `files`: One or more image files or a `.zip` archive.
+  - `model_id`: `"robust_stain_aug"` (default), `"baseline"`, or `"compare"`.
+  - `condition`: Desired stain profile (default `"original"`).
+  - `intensity`: Float from $0.0$ to $2.0$ (default $1.0$).
+- **Response**:
+  - `summary`: Aggregate metrics, success/failure counts, class distribution, and average latency.
+  - `results`: Array of per-image predictions, base64 thumbnails, 9-class probabilities, and comparison agreement flags.
+
+---
+
+## 6. Testing & Mathematical Verification
+
+Run the full test suite (74 tests):
 ```bash
 pytest -v
 ```
 
----
-
-## 4. Workflows & Command-Line Interfaces
-
-StainShift provides two distinct training and evaluation workflows:
-
-### Workflow A: Single-Cohort Stratified Benchmark (`run_experiments.py`)
-Uses `CRC-VAL-HE-7K` partitioned into stratified Train (70%), Validation (15%), and Test (15%) splits:
-- **Dry-run configuration check:**
-  Performs static path, directory, and CLI argument verification without executing training or evaluation:
-  ```bash
-  python run_experiments.py --dry-run
-  ```
-  *(Note: `--dry-run` validates file existence and arguments only; it does not train models, compute training curves, or generate evaluation metric tables).*
-- **Bounded Real-Data Smoke Test:**
-  Runs an actual 1-epoch, sample-limited execution on real data to test the end-to-end pipeline:
-  ```bash
-  python run_experiments.py --data_dir data/CRC-VAL-HE-7K-png --epochs 1 --max_samples_per_class 10 --batch_size 16 --use_mlflow --run_type smoke_test
-  ```
-- **Train and stress-test:**
-  ```bash
-  python run_experiments.py --data_dir data/CRC-VAL-HE-7K-png --checkpoint_policy train_new --epochs 5 --device cpu
-  ```
-- **Checkpoint Policy Options:**
-  - `train_new`: Forces a fresh training run from scratch.
-  - `reuse_if_valid`: Validates checkpoint existence and architecture metadata before running stress tests.
-  - `eval_only`: Evaluates existing verified models without training.
-
-### Workflow B: Cross-Cohort Evaluation (`train_100k_val_7k.py`)
-Trains on `NCT-CRC-HE-100K-NONORM` and evaluates generalization on `CRC-VAL-HE-7K`:
-- **Model Selection Protocol Distinction:**
-  - When the 7K cohort is used to select the best checkpoint, it is designated as **external validation used for model selection**, not an untouched final test.
-  - Command:
-    ```bash
-    python train_100k_val_7k.py --train_dir data/NCT-CRC-HE-100K-NONORM-png --val_dir data/CRC-VAL-HE-7K-png --selection_protocol external_val_selection
-    ```
+### Parity Guarantee
+Every model output produced by `POST /predict` is mathematically identical to a direct PyTorch `model(transform(img))` forward pass:
+- Probability vectors sum to $1.0000 \pm 10^{-4}$.
+- Predicted class matches $\operatorname{argmax}(p)$.
+- Confidence strictly equals $\max(p)$.
 
 ---
 
-## 5. Stain Shift Profiles & Transformation Policy
+## 7. Deployment Instructions
 
-### Evaluated Profiles
-| Profile | $\alpha_H$ (Hematoxylin) | $\alpha_E$ (Eosin) | OD Rotation | Description |
-| :--- | :---: | :---: | :---: | :--- |
-| `original` | 1.00 | 1.00 | $0.0^\circ$ | Exact original source image (pixel bypass) |
-| `reconstruction_only` | 1.00 | 1.00 | $0.0^\circ$ | Deconvolution/reconstruction control (lossy OD roundtrip) |
-| `heavy_hematoxylin` | 1.65 | 0.85 | $+3.0^\circ$ | Synthetic heavy hematoxylin bias |
-| `heavy_eosin` | 0.75 | 1.65 | $-3.0^\circ$ | Synthetic heavy eosin bias |
-| `pale_understained`| 0.60 | 0.60 | $0.0^\circ$ | Synthetic reduced dye concentration |
-| `dark_overstained` | 1.50 | 1.50 | $0.0^\circ$ | Synthetic high dye concentration |
-| `synthetic_warm_shift`| 0.90 | 1.30 | $+8.0^\circ$ | Synthetic warm shift (increased E, positive angle rotation) |
-| `synthetic_cool_shift`| 1.35 | 0.80 | $-8.0^\circ$ | Synthetic cool shift (increased H, negative angle rotation) |
+### Frontend on Vercel
+1. Link the repository to your Vercel account.
+2. Set Root Directory to `website` (or use the root `vercel.json`).
+3. Configure the environment variable:
+   - `NEXT_PUBLIC_API_URL`: URL of your deployed FastAPI backend (e.g., `https://stainshift-api.onrender.com`).
+4. Deploy!
 
-*(Legacy aliases `scanner_warm_shift` and `scanner_cool_shift` remain supported for backward compatibility).*
-
-### Transformation Failure Accounting
-- When deconvolution encounters numerical issues (insufficient tissue pixels or degenerate optical density covariance), the failure reason and file path are recorded.
-- Fallback images are **never** scored as successful shifted samples.
-- The evaluation reports attempted, successful, and failed sample counts.
-
----
-
-## 6. Optional MLflow Experiment Tracking
-
-StainShift includes optional, manual experiment tracking using MLflow.
-Tracking is **disabled by default**, allowing scripts to execute without requiring an MLflow server or local database.
-If `--use_mlflow` is explicitly requested but the `mlflow` package is not installed, execution fails immediately with an informative `ImportError`.
-
-### Enabling MLflow Tracking
-Pass `--use_mlflow` when executing training, evaluation, or the master experiment runner:
+### Backend on Render / Railway / Fly.io / Docker
+Deploy using the provided `Dockerfile`:
 ```bash
-# Recommended: Local SQLite database store with explicit artifact directory
-python run_experiments.py --use_mlflow \
-    --mlflow_tracking_uri sqlite:///mlflow.db \
-    --mlflow_artifact_root ./mlflow_artifacts \
-    --mlflow_experiment_name stainshift_benchmark \
-    --run_type smoke_test
-```
-
-### CLI Tracking Arguments
-- `--use_mlflow`: Enables manual tracking. Fails loudly if `mlflow` is unavailable.
-- `--mlflow_tracking_uri`: Relational backend store URI (e.g. `sqlite:///mlflow.db` or environment variable `MLFLOW_TRACKING_URI`). Stores run metadata, parameters, tags, and scalar metrics.
-- `--mlflow_artifact_root`: Artifact storage directory (e.g. `./mlflow_artifacts` or environment variable `MLFLOW_ARTIFACT_ROOT`). Stores evaluation summaries, classification reports, plots, and optional checkpoints.
-- `--mlflow_experiment_name`: Experiment name in MLflow (default: `stainshift_benchmark`).
-- `--run_type`: Explicit tag: `smoke_test` or `full_experiment`. **Important:** This flag only labels the run in MLflow; it does NOT automatically limit epochs or dataset samples. For bounded execution, combine with `--epochs` and `--max_samples_per_class`.
-- `--log_models_to_mlflow`: Optional flag to log `.pth` checkpoint weights (disabled by default to prevent storage bloat).
-
-> [!WARNING]
-> **Artifact Storage Distinction:** Relocating or copying `mlflow.db` **does not** relocate or copy your artifacts! The SQLite database stores only run metadata, metric series, and parameters. Artifact files (confusion matrices, `eval_results.json`, classification reports) reside in `--mlflow_artifact_root` (or `./mlruns`). You must preserve and copy both.
-
-### Viewing Experiment Runs in MLflow UI
-Launch the interactive web UI:
-```bash
-mlflow ui --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlflow_artifacts
-```
-Then navigate in your browser to `http://127.0.0.1:5000`.
-
-### Persistence & Safe Backup in Google Colab
-By default, files saved on the Google Colab ephemeral disk (`/content`) are lost when the instance disconnects.
-Because active SQLite database connections can be corrupted if copied while open, follow this safe backup-and-restore procedure:
-
-#### Step 1: Mount Google Drive
-```python
-from google.colab import drive
-drive.mount('/content/drive')
-```
-
-#### Step 2: Run Bounded Experiment Locally on High-Speed Ephemeral Disk
-Run training on `/content` for fast local I/O:
-```bash
-python run_experiments.py \
-    --data_dir /content/CRC-VAL-HE-7K \
-    --epochs 1 --max_samples_per_class 10 --batch_size 16 \
-    --use_mlflow \
-    --mlflow_tracking_uri "sqlite:////content/mlflow.db" \
-    --mlflow_artifact_root "/content/mlflow_artifacts" \
-    --run_type smoke_test
-```
-
-#### Step 3: Backup Metadata & Artifacts to Google Drive (Safely Closed)
-Ensure the Python script has finished executing (closing all SQLite transactions and database handles):
-```bash
-mkdir -p /content/drive/MyDrive/stainshift_backup
-# 1. Backup relational metadata store
-cp /content/mlflow.db /content/drive/MyDrive/stainshift_backup/mlflow.db
-# 2. Backup artifacts directory
-cp -r /content/mlflow_artifacts /content/drive/MyDrive/stainshift_backup/mlflow_artifacts
-```
-
-#### Step 4: Restore in a Future Colab Session
-To resume or inspect previous runs in a fresh Colab session:
-```bash
-# Copy persisted files back to local /content
-cp /content/drive/MyDrive/stainshift_backup/mlflow.db /content/mlflow.db
-cp -r /content/drive/MyDrive/stainshift_backup/mlflow_artifacts /content/mlflow_artifacts
-
-# Launch the MLflow UI pointing to both stores
-mlflow ui --backend-store-uri sqlite:////content/mlflow.db --default-artifact-root /content/mlflow_artifacts &
+docker build -t stainshift-api .
+docker run -p 8000:8000 stainshift-api
 ```
 
 ---
 
-## 7. Interactive Visualizer (Dashboard)
-
-Launch the dashboard locally:
-```bash
-streamlit run app.py
-```
-
-### Dashboard Features
-- **Strict Model Safety:** Inference is disabled if valid trained model checkpoints are missing; random weights are never used.
-- **Exact Neutral Controls:** Custom sliders set to neutral $(\alpha_H=1.0, \alpha_E=1.0, \theta=0.0)$ return the exact input image.
-- **Honest Outcome Matrix:** For labelled images, predictions are classified into 4 transitions:
-  - `Correct ➔ Correct`: Accuracy preserved.
-  - `Correct ➔ Incorrect`: Stain-induced misclassification.
-  - `Incorrect ➔ Correct`: Spurious correction.
-  - `Incorrect ➔ Incorrect`: Persistent misclassification.
-- **Unlabelled Uploads:** Disables correctness assertions when ground-truth labels are unavailable.
+## 8. Privacy, Security & Data Handling
+- **Zero Persistent Storage**: Uploaded image bytes are processed directly in-memory via `io.BytesIO`. No uploaded patient or user images are written to disk.
+- **Zip-Slip & Zip-Bomb Protection**: Strict path sanitization and uncompressed size bounds ($100\text{ MB}$ max).
+- **Metadata Stripping**: Previews and returned thumbnails strip all EXIF, instrument, and proprietary hospital headers.
+- **CORS Configurable**: Restrict API access to trusted frontend origins via `ALLOW_ORIGINS`.

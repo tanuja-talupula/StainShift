@@ -1,0 +1,101 @@
+{
+  "benchmark_version": "1.0.0",
+  "evaluation_timestamp": "2026-10-29T13:29:50.908915+00:00",
+  "mlflow_run_id": "c76c59f4bd7c4fe39f2ed2135856845a",
+  "git_commit": "14ef1e1fc15d6e0f9ddb0a2fbd208833a39e3a26",
+  "dataset_root": "data/CRC-VAL-HE-7K",
+  "split_manifest": {
+    "path": "data/CRC-VAL-HE-7K/frozen_final_split_manifest.json",
+    "sha256": "15ad014637fa207d79bd2b02b3adda6bf9ca22035d36cf9f296d04f6bdec0050"
+  },
+  "splits_cache": {
+    "path": "data/CRC-VAL-HE-7K/splits.json",
+    "sha256": "b02baf3c70ef2246b228a8c474ab94b467349ffd09d3c36288bfcaeaa5a60468"
+  },
+  "checkpoints": {
+    "baseline": {
+      "path": "models/full_benchmark_20261029_1838/baseline.pth",
+      "sha256": "3b656cb19974a00e825a73590b2fded9d19745cb9c9e0f68ef2af2288735bf76"
+    },
+    "robust_stain_aug": {
+      "path": "models/full_benchmark_20261029_1838/robust_stain_aug.pth",
+      "sha256": "48ae96612d585c696179e355bcb5d8b12b06dcb651dd9c4ad457b68e446d792a"
+    }
+  },
+  "conditions_evaluated": [
+    "original",
+    "reconstruction_only",
+    "heavy_hematoxylin",
+    "heavy_eosin",
+    "pale_understained",
+    "dark_overstained",
+    "synthetic_warm_shift",
+    "synthetic_cool_shift"
+  ],
+  "results_summary": {
+    "original": {
+      "baseline_acc": 99.91,
+      "baseline_drop": 0.0,
+      "robust_acc": 98.79,
+      "robust_drop": 0.0,
+      "recovery": -1.11,
+      "description": "original"
+    },
+    "reconstruction_only": {
+      "baseline_acc": 33.89,
+      "baseline_drop": -66.02,
+      "robust_acc": 97.68,
+      "robust_drop": -1.11,
+      "recovery": 63.79,
+      "description": "reconstruction_only"
+    },
+    "heavy_hematoxylin": {
+      "baseline_acc": 32.4,
+      "baseline_drop": -67.5,
+      "robust_acc": 96.94,
+      "robust_drop": -1.86,
+      "recovery": 64.53,
+      "description": "heavy_hematoxylin"
+    },
+    "heavy_eosin": {
+      "baseline_acc": 28.97,
+      "baseline_drop": -70.94,
+      "robust_acc": 96.29,
+      "robust_drop": -2.51,
+      "recovery": 67.32,
+      "description": "heavy_eosin"
+    },
+    "pale_understained": {
+      "baseline_acc": 34.73,
+      "baseline_drop": -65.18,
+      "robust_acc": 96.75,
+      "robust_drop": -2.04,
+      "recovery": 62.02,
+      "description": "pale_understained"
+    },
+    "dark_overstained": {
+      "baseline_acc": 31.94,
+      "baseline_drop": -67.97,
+      "robust_acc": 96.47,
+      "robust_drop": -2.32,
+      "recovery": 64.53,
+      "description": "dark_overstained"
+    },
+    "synthetic_warm_shift": {
+      "baseline_acc": 31.57,
+      "baseline_drop": -68.34,
+      "robust_acc": 94.8,
+      "robust_drop": -3.99,
+      "recovery": 63.23,
+      "description": "synthetic_warm_shift"
+    },
+    "synthetic_cool_shift": {
+      "baseline_acc": 36.3,
+      "baseline_drop": -63.6,
+      "robust_acc": 96.38,
+      "robust_drop": -2.41,
+      "recovery": 60.07,
+      "description": "synthetic_cool_shift"
+    }
+  }
+}

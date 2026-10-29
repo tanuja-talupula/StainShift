@@ -1,0 +1,2801 @@
+{
+  "metadata": {
+    "title": "StainShift Verified Precomputed Demonstration Examples",
+    "selection_rule": "First lexicographically sorted patch ID per class in the frozen held-out test split (splits.json)",
+    "disclaimer": "Precomputed verified actual model outputs on the first lexicographically sorted held-out test patches per class. Deterministic selection does not imply an unbiased or representative sample. Zero synthetic logits or browser-side approximations.",
+    "mlflow_evaluation_run_id": "c76c59f4bd7c4fe39f2ed2135856845a",
+    "frozen_split_manifest_sha256": "15ad014637fa207d79bd2b02b3adda6bf9ca22035d36cf9f296d04f6bdec0050",
+    "checkpoints": {
+      "baseline": {
+        "path": "models/full_benchmark_20261029_1838/baseline.pth",
+        "sha256": "3b656cb19974a00e825a73590b2fded9d19745cb9c9e0f68ef2af2288735bf76",
+        "architecture": "mobilenet_v3_small"
+      },
+      "robust_stain_aug": {
+        "path": "models/full_benchmark_20261029_1838/robust_stain_aug.pth",
+        "sha256": "48ae96612d585c696179e355bcb5d8b12b06dcb651dd9c4ad457b68e446d792a",
+        "architecture": "mobilenet_v3_small"
+      }
+    },
+    "preprocessing": {
+      "resize": [
+        224,
+        224
+      ],
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "total_patches_selected": 9,
+    "conditions_per_patch": 8,
+    "total_images_generated": 72,
+    "total_image_bytes": 5984849,
+    "image_format": "PNG (lossless RGB, 224x224)"
+  },
+  "classes": [
+    "ADI",
+    "BACK",
+    "DEB",
+    "LYM",
+    "MUC",
+    "MUS",
+    "NORM",
+    "STR",
+    "TUM"
+  ],
+  "conditions": [
+    "original",
+    "reconstruction_only",
+    "heavy_hematoxylin",
+    "heavy_eosin",
+    "pale_understained",
+    "dark_overstained",
+    "synthetic_warm_shift",
+    "synthetic_cool_shift"
+  ],
+  "examples": [
+    {
+      "patch_id": "ADI-TCGA-AAWDNKDK",
+      "tissue_class": "ADI",
+      "tissue_class_description": "Adipose tissue (Fat)",
+      "source_relative_path": "ADI/ADI-TCGA-AAWDNKDK.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/ADI-TCGA-AAWDNKDK_original.png",
+          "baseline": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 1.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.9999,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/ADI-TCGA-AAWDNKDK_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.7886,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.001,
+              "DEB": 0.0008,
+              "LYM": 0.0002,
+              "MUC": 0.2056,
+              "MUS": 0.0025,
+              "NORM": 0.0011,
+              "STR": 0.0,
+              "TUM": 0.7886
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.9999,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/ADI-TCGA-AAWDNKDK_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.8981,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0004,
+              "DEB": 0.0002,
+              "LYM": 0.0002,
+              "MUC": 0.0996,
+              "MUS": 0.0008,
+              "NORM": 0.0007,
+              "STR": 0.0,
+              "TUM": 0.8981
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.9999,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/ADI-TCGA-AAWDNKDK_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.5044,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0026,
+              "BACK": 0.0365,
+              "DEB": 0.0489,
+              "LYM": 0.0015,
+              "MUC": 0.3261,
+              "MUS": 0.0771,
+              "NORM": 0.0019,
+              "STR": 0.0009,
+              "TUM": 0.5044
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 0.9997,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.9997,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0,
+              "NORM": 0.0001,
+              "STR": 0.0,
+              "TUM": 0.0001
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/ADI-TCGA-AAWDNKDK_pale_understained.png",
+          "baseline": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.725,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0003,
+              "BACK": 0.0012,
+              "DEB": 0.0002,
+              "LYM": 0.0007,
+              "MUC": 0.725,
+              "MUS": 0.0012,
+              "NORM": 0.0037,
+              "STR": 0.0001,
+              "TUM": 0.2675
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 0.9996,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.9996,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0003,
+              "MUS": 0.0,
+              "NORM": 0.0001,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/ADI-TCGA-AAWDNKDK_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.89,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0018,
+              "DEB": 0.001,
+              "LYM": 0.0001,
+              "MUC": 0.099,
+              "MUS": 0.0075,
+              "NORM": 0.0004,
+              "STR": 0.0,
+              "TUM": 0.89
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.9999,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/ADI-TCGA-AAWDNKDK_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.8665,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0002,
+              "BACK": 0.0021,
+              "DEB": 0.0041,
+              "LYM": 0.0002,
+              "MUC": 0.1195,
+              "MUS": 0.0065,
+              "NORM": 0.0008,
+              "STR": 0.0,
+              "TUM": 0.8665
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.9999,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/ADI-TCGA-AAWDNKDK_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.7062,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0003,
+              "DEB": 0.0,
+              "LYM": 0.0001,
+              "MUC": 0.2922,
+              "MUS": 0.0004,
+              "NORM": 0.0006,
+              "STR": 0.0,
+              "TUM": 0.7062
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "ADI",
+            "predicted_class_description": "Adipose tissue (Fat)",
+            "confidence": 0.9991,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.9991,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0005,
+              "MUS": 0.0,
+              "NORM": 0.0002,
+              "STR": 0.0,
+              "TUM": 0.0001
+            }
+          }
+        }
+      }
+    },
+    {
+      "patch_id": "BACK-TCGA-ACTQDGTI",
+      "tissue_class": "BACK",
+      "tissue_class_description": "Background (Glass / clear slide)",
+      "source_relative_path": "BACK/BACK-TCGA-ACTQDGTI.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/BACK-TCGA-ACTQDGTI_original.png",
+          "baseline": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 1.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.9999,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/BACK-TCGA-ACTQDGTI_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.8273,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0024,
+              "BACK": 0.0773,
+              "DEB": 0.8273,
+              "LYM": 0.0056,
+              "MUC": 0.007,
+              "MUS": 0.0739,
+              "NORM": 0.0018,
+              "STR": 0.0022,
+              "TUM": 0.0025
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.9107,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0717,
+              "BACK": 0.9107,
+              "DEB": 0.0005,
+              "LYM": 0.001,
+              "MUC": 0.0027,
+              "MUS": 0.0016,
+              "NORM": 0.0035,
+              "STR": 0.0056,
+              "TUM": 0.0026
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/BACK-TCGA-ACTQDGTI_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.7213,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0077,
+              "BACK": 0.7213,
+              "DEB": 0.1728,
+              "LYM": 0.0141,
+              "MUC": 0.0579,
+              "MUS": 0.0174,
+              "NORM": 0.002,
+              "STR": 0.0034,
+              "TUM": 0.0034
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.2476,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0609,
+              "BACK": 0.1366,
+              "DEB": 0.1557,
+              "LYM": 0.0496,
+              "MUC": 0.0213,
+              "MUS": 0.0507,
+              "NORM": 0.1382,
+              "STR": 0.2476,
+              "TUM": 0.1394
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/BACK-TCGA-ACTQDGTI_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.8367,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0036,
+              "BACK": 0.8367,
+              "DEB": 0.0461,
+              "LYM": 0.0592,
+              "MUC": 0.0214,
+              "MUS": 0.0075,
+              "NORM": 0.0096,
+              "STR": 0.0085,
+              "TUM": 0.0074
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.9997,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0003,
+              "BACK": 0.9997,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/BACK-TCGA-ACTQDGTI_pale_understained.png",
+          "baseline": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.5112,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0193,
+              "BACK": 0.5112,
+              "DEB": 0.2809,
+              "LYM": 0.1151,
+              "MUC": 0.0228,
+              "MUS": 0.014,
+              "NORM": 0.0095,
+              "STR": 0.0117,
+              "TUM": 0.0156
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.9995,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0005,
+              "BACK": 0.9995,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/BACK-TCGA-ACTQDGTI_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.7587,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0022,
+              "BACK": 0.1908,
+              "DEB": 0.7587,
+              "LYM": 0.0045,
+              "MUC": 0.0105,
+              "MUS": 0.0297,
+              "NORM": 0.0014,
+              "STR": 0.0008,
+              "TUM": 0.0016
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.3466,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0379,
+              "BACK": 0.3466,
+              "DEB": 0.115,
+              "LYM": 0.0395,
+              "MUC": 0.0172,
+              "MUS": 0.0409,
+              "NORM": 0.1142,
+              "STR": 0.1906,
+              "TUM": 0.098
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/BACK-TCGA-ACTQDGTI_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.9574,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0146,
+              "BACK": 0.9574,
+              "DEB": 0.006,
+              "LYM": 0.0052,
+              "MUC": 0.0092,
+              "MUS": 0.0034,
+              "NORM": 0.0014,
+              "STR": 0.0015,
+              "TUM": 0.0013
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.9451,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0411,
+              "BACK": 0.9451,
+              "DEB": 0.0004,
+              "LYM": 0.0006,
+              "MUC": 0.0013,
+              "MUS": 0.0015,
+              "NORM": 0.0024,
+              "STR": 0.0049,
+              "TUM": 0.0027
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/BACK-TCGA-ACTQDGTI_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.843,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0034,
+              "BACK": 0.1115,
+              "DEB": 0.843,
+              "LYM": 0.0094,
+              "MUC": 0.0057,
+              "MUS": 0.016,
+              "NORM": 0.0034,
+              "STR": 0.0032,
+              "TUM": 0.0043
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.9957,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0022,
+              "BACK": 0.9957,
+              "DEB": 0.0004,
+              "LYM": 0.0002,
+              "MUC": 0.0001,
+              "MUS": 0.0004,
+              "NORM": 0.0003,
+              "STR": 0.0004,
+              "TUM": 0.0003
+            }
+          }
+        }
+      }
+    },
+    {
+      "patch_id": "DEB-TCGA-AANNAWLE",
+      "tissue_class": "DEB",
+      "tissue_class_description": "Debris (Necrotic tissue & artifacts)",
+      "source_relative_path": "DEB/DEB-TCGA-AANNAWLE.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/DEB-TCGA-AANNAWLE_original.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9997,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.9997,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0001,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.999,
+              "LYM": 0.0003,
+              "MUC": 0.0,
+              "MUS": 0.0004,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0002
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/DEB-TCGA-AANNAWLE_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.5968,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0021,
+              "BACK": 0.0124,
+              "DEB": 0.5968,
+              "LYM": 0.1155,
+              "MUC": 0.122,
+              "MUS": 0.0194,
+              "NORM": 0.0065,
+              "STR": 0.0098,
+              "TUM": 0.1155
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9954,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0002,
+              "DEB": 0.9954,
+              "LYM": 0.0006,
+              "MUC": 0.0,
+              "MUS": 0.0021,
+              "NORM": 0.0002,
+              "STR": 0.0006,
+              "TUM": 0.0008
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/DEB-TCGA-AANNAWLE_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.3222,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.002,
+              "BACK": 0.0223,
+              "DEB": 0.3222,
+              "LYM": 0.0494,
+              "MUC": 0.3155,
+              "MUS": 0.0389,
+              "NORM": 0.0105,
+              "STR": 0.0118,
+              "TUM": 0.2272
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9994,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.9994,
+              "LYM": 0.0001,
+              "MUC": 0.0,
+              "MUS": 0.0002,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0002
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/DEB-TCGA-AANNAWLE_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.8182,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0011,
+              "BACK": 0.0079,
+              "DEB": 0.8182,
+              "LYM": 0.0523,
+              "MUC": 0.0562,
+              "MUS": 0.0162,
+              "NORM": 0.0049,
+              "STR": 0.0115,
+              "TUM": 0.0315
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9814,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0002,
+              "BACK": 0.0006,
+              "DEB": 0.9814,
+              "LYM": 0.002,
+              "MUC": 0.0003,
+              "MUS": 0.0089,
+              "NORM": 0.0008,
+              "STR": 0.0034,
+              "TUM": 0.0025
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/DEB-TCGA-AANNAWLE_pale_understained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9237,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0006,
+              "BACK": 0.0042,
+              "DEB": 0.9237,
+              "LYM": 0.0217,
+              "MUC": 0.022,
+              "MUS": 0.0095,
+              "NORM": 0.0029,
+              "STR": 0.0047,
+              "TUM": 0.0107
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9842,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0007,
+              "DEB": 0.9842,
+              "LYM": 0.0019,
+              "MUC": 0.0002,
+              "MUS": 0.0075,
+              "NORM": 0.0007,
+              "STR": 0.0026,
+              "TUM": 0.0021
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/DEB-TCGA-AANNAWLE_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.4301,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0018,
+              "BACK": 0.02,
+              "DEB": 0.1164,
+              "LYM": 0.0246,
+              "MUC": 0.4301,
+              "MUS": 0.0243,
+              "NORM": 0.0074,
+              "STR": 0.0049,
+              "TUM": 0.3706
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9987,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.9987,
+              "LYM": 0.0002,
+              "MUC": 0.0,
+              "MUS": 0.0005,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0003
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/DEB-TCGA-AANNAWLE_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9532,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0003,
+              "BACK": 0.0023,
+              "DEB": 0.9532,
+              "LYM": 0.0198,
+              "MUC": 0.0097,
+              "MUS": 0.0035,
+              "NORM": 0.0009,
+              "STR": 0.0015,
+              "TUM": 0.0088
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9967,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.9967,
+              "LYM": 0.0006,
+              "MUC": 0.0,
+              "MUS": 0.0014,
+              "NORM": 0.0001,
+              "STR": 0.0005,
+              "TUM": 0.0005
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/DEB-TCGA-AANNAWLE_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.6135,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0019,
+              "BACK": 0.01,
+              "DEB": 0.0846,
+              "LYM": 0.0156,
+              "MUC": 0.2215,
+              "MUS": 0.0323,
+              "NORM": 0.0139,
+              "STR": 0.0068,
+              "TUM": 0.6135
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9968,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.9968,
+              "LYM": 0.0004,
+              "MUC": 0.0,
+              "MUS": 0.0013,
+              "NORM": 0.0001,
+              "STR": 0.0005,
+              "TUM": 0.0007
+            }
+          }
+        }
+      }
+    },
+    {
+      "patch_id": "LYM-TCGA-AIVQRVDG",
+      "tissue_class": "LYM",
+      "tissue_class_description": "Lymphocytes (Immune infiltration)",
+      "source_relative_path": "LYM/LYM-TCGA-AIVQRVDG.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/LYM-TCGA-AIVQRVDG_original.png",
+          "baseline": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.9999,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.9986,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0011,
+              "LYM": 0.9986,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0001,
+              "STR": 0.0001,
+              "TUM": 0.0
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/LYM-TCGA-AIVQRVDG_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.6709,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0007,
+              "BACK": 0.045,
+              "DEB": 0.6709,
+              "LYM": 0.001,
+              "MUC": 0.003,
+              "MUS": 0.2707,
+              "NORM": 0.0002,
+              "STR": 0.0017,
+              "TUM": 0.0068
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.9714,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0003,
+              "BACK": 0.0003,
+              "DEB": 0.0124,
+              "LYM": 0.9714,
+              "MUC": 0.0014,
+              "MUS": 0.0003,
+              "NORM": 0.005,
+              "STR": 0.0049,
+              "TUM": 0.0039
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/LYM-TCGA-AIVQRVDG_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.8927,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0002,
+              "BACK": 0.0106,
+              "DEB": 0.8927,
+              "LYM": 0.0007,
+              "MUC": 0.0011,
+              "MUS": 0.0931,
+              "NORM": 0.0001,
+              "STR": 0.0005,
+              "TUM": 0.0009
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.9852,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0003,
+              "BACK": 0.0002,
+              "DEB": 0.0046,
+              "LYM": 0.9852,
+              "MUC": 0.0011,
+              "MUS": 0.0002,
+              "NORM": 0.0022,
+              "STR": 0.0047,
+              "TUM": 0.0015
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/LYM-TCGA-AIVQRVDG_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9625,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0029,
+              "DEB": 0.9625,
+              "LYM": 0.0001,
+              "MUC": 0.0001,
+              "MUS": 0.034,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0004
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.9087,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0011,
+              "BACK": 0.0009,
+              "DEB": 0.0288,
+              "LYM": 0.9087,
+              "MUC": 0.004,
+              "MUS": 0.0013,
+              "NORM": 0.0227,
+              "STR": 0.0189,
+              "TUM": 0.0136
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/LYM-TCGA-AIVQRVDG_pale_understained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.5823,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0032,
+              "BACK": 0.2206,
+              "DEB": 0.5823,
+              "LYM": 0.0068,
+              "MUC": 0.0093,
+              "MUS": 0.1623,
+              "NORM": 0.0003,
+              "STR": 0.0054,
+              "TUM": 0.0099
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.9881,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0001,
+              "DEB": 0.0058,
+              "LYM": 0.9881,
+              "MUC": 0.001,
+              "MUS": 0.0001,
+              "NORM": 0.0016,
+              "STR": 0.0019,
+              "TUM": 0.0013
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/LYM-TCGA-AIVQRVDG_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.8432,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0078,
+              "DEB": 0.8432,
+              "LYM": 0.0004,
+              "MUC": 0.0007,
+              "MUS": 0.1464,
+              "NORM": 0.0001,
+              "STR": 0.0005,
+              "TUM": 0.0008
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.8818,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0033,
+              "BACK": 0.0021,
+              "DEB": 0.0193,
+              "LYM": 0.8818,
+              "MUC": 0.0097,
+              "MUS": 0.0023,
+              "NORM": 0.0291,
+              "STR": 0.0393,
+              "TUM": 0.0131
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/LYM-TCGA-AIVQRVDG_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9231,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0003,
+              "BACK": 0.0091,
+              "DEB": 0.9231,
+              "LYM": 0.0011,
+              "MUC": 0.0013,
+              "MUS": 0.0635,
+              "NORM": 0.0002,
+              "STR": 0.0006,
+              "TUM": 0.0008
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.5302,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0055,
+              "BACK": 0.0041,
+              "DEB": 0.0339,
+              "LYM": 0.5302,
+              "MUC": 0.0301,
+              "MUS": 0.0216,
+              "NORM": 0.0319,
+              "STR": 0.3107,
+              "TUM": 0.032
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/LYM-TCGA-AIVQRVDG_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.7666,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0009,
+              "BACK": 0.0228,
+              "DEB": 0.7666,
+              "LYM": 0.003,
+              "MUC": 0.0067,
+              "MUS": 0.1886,
+              "NORM": 0.0008,
+              "STR": 0.0022,
+              "TUM": 0.0083
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "LYM",
+            "predicted_class_description": "Lymphocytes (Immune infiltration)",
+            "confidence": 0.9775,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0002,
+              "DEB": 0.0161,
+              "LYM": 0.9775,
+              "MUC": 0.0006,
+              "MUS": 0.0001,
+              "NORM": 0.0028,
+              "STR": 0.001,
+              "TUM": 0.0017
+            }
+          }
+        }
+      }
+    },
+    {
+      "patch_id": "MUC-TCGA-AFKKMVFN",
+      "tissue_class": "MUC",
+      "tissue_class_description": "Mucus (Extracellular mucin pools)",
+      "source_relative_path": "MUC/MUC-TCGA-AFKKMVFN.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/MUC-TCGA-AFKKMVFN_original.png",
+          "baseline": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 1.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.9997,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.9997,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0003,
+              "TUM": 0.0
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/MUC-TCGA-AFKKMVFN_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.2494,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.1341,
+              "BACK": 0.2494,
+              "DEB": 0.2431,
+              "LYM": 0.1049,
+              "MUC": 0.0437,
+              "MUS": 0.0705,
+              "NORM": 0.0456,
+              "STR": 0.0556,
+              "TUM": 0.053
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.9998,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.9998,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/MUC-TCGA-AFKKMVFN_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.2466,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.1568,
+              "BACK": 0.239,
+              "DEB": 0.2466,
+              "LYM": 0.0988,
+              "MUC": 0.0438,
+              "MUS": 0.0683,
+              "NORM": 0.048,
+              "STR": 0.048,
+              "TUM": 0.0506
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0001,
+              "MUC": 0.999,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0008,
+              "TUM": 0.0
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/MUC-TCGA-AFKKMVFN_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.2573,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.1471,
+              "BACK": 0.2573,
+              "DEB": 0.2399,
+              "LYM": 0.1186,
+              "MUC": 0.05,
+              "MUS": 0.0651,
+              "NORM": 0.0284,
+              "STR": 0.0504,
+              "TUM": 0.0431
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.9999,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/MUC-TCGA-AFKKMVFN_pale_understained.png",
+          "baseline": {
+            "predicted_class": "BACK",
+            "predicted_class_description": "Background (Glass / clear slide)",
+            "confidence": 0.3536,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.1774,
+              "BACK": 0.3536,
+              "DEB": 0.1318,
+              "LYM": 0.1236,
+              "MUC": 0.038,
+              "MUS": 0.0538,
+              "NORM": 0.0304,
+              "STR": 0.0456,
+              "TUM": 0.0458
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.9999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.9999,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/MUC-TCGA-AFKKMVFN_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.4078,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.1311,
+              "BACK": 0.1925,
+              "DEB": 0.4078,
+              "LYM": 0.0586,
+              "MUC": 0.0396,
+              "MUS": 0.056,
+              "NORM": 0.0313,
+              "STR": 0.0409,
+              "TUM": 0.0423
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.9997,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0001,
+              "MUC": 0.9997,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0001
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/MUC-TCGA-AFKKMVFN_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.2379,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.2023,
+              "BACK": 0.2045,
+              "DEB": 0.2379,
+              "LYM": 0.0942,
+              "MUC": 0.0462,
+              "MUS": 0.0616,
+              "NORM": 0.0515,
+              "STR": 0.0383,
+              "TUM": 0.0635
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.9988,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.9988,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.001,
+              "TUM": 0.0001
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/MUC-TCGA-AFKKMVFN_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.6709,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0128,
+              "BACK": 0.0333,
+              "DEB": 0.014,
+              "LYM": 0.0062,
+              "MUC": 0.6709,
+              "MUS": 0.2259,
+              "NORM": 0.0006,
+              "STR": 0.0313,
+              "TUM": 0.0051
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUC",
+            "predicted_class_description": "Mucus (Extracellular mucin pools)",
+            "confidence": 0.9998,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0001,
+              "MUC": 0.9998,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "patch_id": "MUS-TCGA-AASRLCCT",
+      "tissue_class": "MUS",
+      "tissue_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+      "source_relative_path": "MUS/MUS-TCGA-AASRLCCT.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/MUS-TCGA-AASRLCCT_original.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9779,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.9779,
+              "NORM": 0.0,
+              "STR": 0.022,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9897,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0007,
+              "DEB": 0.0005,
+              "LYM": 0.0001,
+              "MUC": 0.0004,
+              "MUS": 0.9897,
+              "NORM": 0.0002,
+              "STR": 0.0083,
+              "TUM": 0.0001
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/MUS-TCGA-AASRLCCT_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9965,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0008,
+              "DEB": 0.0024,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.9965,
+              "NORM": 0.0,
+              "STR": 0.0003,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.999,
+              "NORM": 0.0,
+              "STR": 0.0008,
+              "TUM": 0.0
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/MUS-TCGA-AASRLCCT_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9898,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0005,
+              "DEB": 0.0096,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.9898,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9984,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0002,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.9984,
+              "NORM": 0.0001,
+              "STR": 0.0012,
+              "TUM": 0.0
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/MUS-TCGA-AASRLCCT_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.998,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0008,
+              "DEB": 0.001,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.998,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.992,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0039,
+              "DEB": 0.0003,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.992,
+              "NORM": 0.0003,
+              "STR": 0.0033,
+              "TUM": 0.0
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/MUS-TCGA-AASRLCCT_pale_understained.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9986,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0003,
+              "DEB": 0.0008,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.9986,
+              "NORM": 0.0,
+              "STR": 0.0003,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9971,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0003,
+              "DEB": 0.0001,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.9971,
+              "NORM": 0.0001,
+              "STR": 0.0023,
+              "TUM": 0.0
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/MUS-TCGA-AASRLCCT_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9996,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0001,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.9996,
+              "NORM": 0.0,
+              "STR": 0.0002,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9986,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0001,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.9986,
+              "NORM": 0.0001,
+              "STR": 0.0011,
+              "TUM": 0.0
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/MUS-TCGA-AASRLCCT_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9641,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0146,
+              "DEB": 0.0181,
+              "LYM": 0.0001,
+              "MUC": 0.0006,
+              "MUS": 0.9641,
+              "NORM": 0.0002,
+              "STR": 0.0021,
+              "TUM": 0.0001
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9747,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0079,
+              "DEB": 0.0004,
+              "LYM": 0.0001,
+              "MUC": 0.0022,
+              "MUS": 0.9747,
+              "NORM": 0.0013,
+              "STR": 0.0133,
+              "TUM": 0.0002
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/MUS-TCGA-AASRLCCT_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9921,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0006,
+              "DEB": 0.0066,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.9921,
+              "NORM": 0.0,
+              "STR": 0.0005,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9993,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0001,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.9993,
+              "NORM": 0.0,
+              "STR": 0.0005,
+              "TUM": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "patch_id": "NORM-TCGA-ALLNPHNM",
+      "tissue_class": "NORM",
+      "tissue_class_description": "Normal colon mucosa (Healthy crypts)",
+      "source_relative_path": "NORM/NORM-TCGA-ALLNPHNM.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/NORM-TCGA-ALLNPHNM_original.png",
+          "baseline": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 1.0,
+              "STR": 0.0,
+              "TUM": 0.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 0.9972,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0006,
+              "MUC": 0.0001,
+              "MUS": 0.0,
+              "NORM": 0.9972,
+              "STR": 0.0002,
+              "TUM": 0.0018
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/NORM-TCGA-ALLNPHNM_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9455,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0005,
+              "BACK": 0.0174,
+              "DEB": 0.9455,
+              "LYM": 0.0036,
+              "MUC": 0.0044,
+              "MUS": 0.0244,
+              "NORM": 0.0006,
+              "STR": 0.0014,
+              "TUM": 0.0023
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 0.9751,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0003,
+              "DEB": 0.0,
+              "LYM": 0.0007,
+              "MUC": 0.0003,
+              "MUS": 0.0003,
+              "NORM": 0.9751,
+              "STR": 0.0045,
+              "TUM": 0.0187
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/NORM-TCGA-ALLNPHNM_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9907,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0029,
+              "DEB": 0.9907,
+              "LYM": 0.0009,
+              "MUC": 0.0004,
+              "MUS": 0.0043,
+              "NORM": 0.0001,
+              "STR": 0.0002,
+              "TUM": 0.0004
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 0.9747,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0,
+              "LYM": 0.0003,
+              "MUC": 0.0003,
+              "MUS": 0.0002,
+              "NORM": 0.9747,
+              "STR": 0.0041,
+              "TUM": 0.0202
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/NORM-TCGA-ALLNPHNM_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9742,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0002,
+              "BACK": 0.0081,
+              "DEB": 0.9742,
+              "LYM": 0.0012,
+              "MUC": 0.0007,
+              "MUS": 0.0142,
+              "NORM": 0.0001,
+              "STR": 0.0008,
+              "TUM": 0.0005
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 0.5666,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0014,
+              "BACK": 0.0072,
+              "DEB": 0.0036,
+              "LYM": 0.0115,
+              "MUC": 0.0041,
+              "MUS": 0.0215,
+              "NORM": 0.5666,
+              "STR": 0.0678,
+              "TUM": 0.3163
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/NORM-TCGA-ALLNPHNM_pale_understained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9962,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.001,
+              "DEB": 0.9962,
+              "LYM": 0.0007,
+              "MUC": 0.0001,
+              "MUS": 0.0016,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0003
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 0.9799,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0001,
+              "DEB": 0.0,
+              "LYM": 0.0002,
+              "MUC": 0.0012,
+              "MUS": 0.0001,
+              "NORM": 0.9799,
+              "STR": 0.0134,
+              "TUM": 0.005
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/NORM-TCGA-ALLNPHNM_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9711,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0002,
+              "BACK": 0.0106,
+              "DEB": 0.9711,
+              "LYM": 0.0014,
+              "MUC": 0.0008,
+              "MUS": 0.014,
+              "NORM": 0.0002,
+              "STR": 0.001,
+              "TUM": 0.0007
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 0.7614,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0002,
+              "BACK": 0.0016,
+              "DEB": 0.0012,
+              "LYM": 0.0022,
+              "MUC": 0.0011,
+              "MUS": 0.0107,
+              "NORM": 0.7614,
+              "STR": 0.0235,
+              "TUM": 0.198
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/NORM-TCGA-ALLNPHNM_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9112,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0013,
+              "BACK": 0.0264,
+              "DEB": 0.9112,
+              "LYM": 0.0058,
+              "MUC": 0.0104,
+              "MUS": 0.0366,
+              "NORM": 0.0012,
+              "STR": 0.0035,
+              "TUM": 0.0036
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 0.4675,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0019,
+              "BACK": 0.0068,
+              "DEB": 0.0073,
+              "LYM": 0.0086,
+              "MUC": 0.0079,
+              "MUS": 0.1305,
+              "NORM": 0.4675,
+              "STR": 0.279,
+              "TUM": 0.0906
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/NORM-TCGA-ALLNPHNM_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9485,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0017,
+              "DEB": 0.9485,
+              "LYM": 0.0001,
+              "MUC": 0.0001,
+              "MUS": 0.0493,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 0.0004
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "NORM",
+            "predicted_class_description": "Normal colon mucosa (Healthy crypts)",
+            "confidence": 0.996,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0002,
+              "MUC": 0.0001,
+              "MUS": 0.0,
+              "NORM": 0.996,
+              "STR": 0.0014,
+              "TUM": 0.0023
+            }
+          }
+        }
+      }
+    },
+    {
+      "patch_id": "STR-TCGA-AEFYPTDG",
+      "tissue_class": "STR",
+      "tissue_class_description": "Cancer-associated stroma (Desmoplastic)",
+      "source_relative_path": "STR/STR-TCGA-AEFYPTDG.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/STR-TCGA-AEFYPTDG_original.png",
+          "baseline": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.9975,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0021,
+              "NORM": 0.0,
+              "STR": 0.9975,
+              "TUM": 0.0003
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.9824,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0175,
+              "NORM": 0.0,
+              "STR": 0.9824,
+              "TUM": 0.0
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/STR-TCGA-AEFYPTDG_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.9904,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0061,
+              "NORM": 0.0001,
+              "STR": 0.9904,
+              "TUM": 0.0033
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.9995,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0004,
+              "NORM": 0.0,
+              "STR": 0.9995,
+              "TUM": 0.0
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/STR-TCGA-AEFYPTDG_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.7671,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0009,
+              "DEB": 0.0002,
+              "LYM": 0.0,
+              "MUC": 0.0206,
+              "MUS": 0.1365,
+              "NORM": 0.0004,
+              "STR": 0.0743,
+              "TUM": 0.7671
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.999,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0006,
+              "MUS": 0.0005,
+              "NORM": 0.0,
+              "STR": 0.999,
+              "TUM": 0.0
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/STR-TCGA-AEFYPTDG_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9659,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0042,
+              "DEB": 0.0013,
+              "LYM": 0.0001,
+              "MUC": 0.0002,
+              "MUS": 0.9659,
+              "NORM": 0.0008,
+              "STR": 0.0271,
+              "TUM": 0.0004
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.9266,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0002,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.9266,
+              "NORM": 0.0004,
+              "STR": 0.0716,
+              "TUM": 0.001
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/STR-TCGA-AEFYPTDG_pale_understained.png",
+          "baseline": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.9174,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0002,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0026,
+              "MUS": 0.0781,
+              "NORM": 0.0011,
+              "STR": 0.9174,
+              "TUM": 0.0005
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.9991,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0007,
+              "NORM": 0.0,
+              "STR": 0.9991,
+              "TUM": 0.0
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/STR-TCGA-AEFYPTDG_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.8623,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0002,
+              "MUS": 0.0424,
+              "NORM": 0.0008,
+              "STR": 0.8623,
+              "TUM": 0.0942
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.9974,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0026,
+              "NORM": 0.0,
+              "STR": 0.9974,
+              "TUM": 0.0
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/STR-TCGA-AEFYPTDG_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.874,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0049,
+              "DEB": 0.0002,
+              "LYM": 0.0001,
+              "MUC": 0.0077,
+              "MUS": 0.0809,
+              "NORM": 0.0049,
+              "STR": 0.874,
+              "TUM": 0.0272
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.9998,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0001,
+              "MUS": 0.0001,
+              "NORM": 0.0,
+              "STR": 0.9998,
+              "TUM": 0.0
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/STR-TCGA-AEFYPTDG_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "MUS",
+            "predicted_class_description": "Smooth muscle (Muscularis propria / mucosae)",
+            "confidence": 0.6139,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0004,
+              "DEB": 0.0003,
+              "LYM": 0.0,
+              "MUC": 0.0037,
+              "MUS": 0.6139,
+              "NORM": 0.0004,
+              "STR": 0.3773,
+              "TUM": 0.004
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "STR",
+            "predicted_class_description": "Cancer-associated stroma (Desmoplastic)",
+            "confidence": 0.7709,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0002,
+              "MUS": 0.2289,
+              "NORM": 0.0,
+              "STR": 0.7709,
+              "TUM": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "patch_id": "TUM-TCGA-ACRLPPQE",
+      "tissue_class": "TUM",
+      "tissue_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+      "source_relative_path": "TUM/TUM-TCGA-ACRLPPQE.tif",
+      "conditions": {
+        "original": {
+          "image_url": "/demo/images/TUM-TCGA-ACRLPPQE_original.png",
+          "baseline": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 1.0
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 1.0
+            }
+          }
+        },
+        "reconstruction_only": {
+          "image_url": "/demo/images/TUM-TCGA-ACRLPPQE_reconstruction_only.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9846,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0048,
+              "DEB": 0.9846,
+              "LYM": 0.0009,
+              "MUC": 0.0005,
+              "MUS": 0.0085,
+              "NORM": 0.0001,
+              "STR": 0.0003,
+              "TUM": 0.0003
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 1.0
+            }
+          }
+        },
+        "heavy_hematoxylin": {
+          "image_url": "/demo/images/TUM-TCGA-ACRLPPQE_heavy_hematoxylin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9874,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0002,
+              "BACK": 0.0036,
+              "DEB": 0.9874,
+              "LYM": 0.0011,
+              "MUC": 0.0011,
+              "MUS": 0.0056,
+              "NORM": 0.0002,
+              "STR": 0.0002,
+              "TUM": 0.0007
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 1.0
+            }
+          }
+        },
+        "heavy_eosin": {
+          "image_url": "/demo/images/TUM-TCGA-ACRLPPQE_heavy_eosin.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9678,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0001,
+              "BACK": 0.0057,
+              "DEB": 0.9678,
+              "LYM": 0.0007,
+              "MUC": 0.0007,
+              "MUS": 0.0241,
+              "NORM": 0.0001,
+              "STR": 0.0004,
+              "TUM": 0.0004
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.9691,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0006,
+              "BACK": 0.0012,
+              "DEB": 0.0001,
+              "LYM": 0.0014,
+              "MUC": 0.0006,
+              "MUS": 0.0003,
+              "NORM": 0.0253,
+              "STR": 0.0014,
+              "TUM": 0.9691
+            }
+          }
+        },
+        "pale_understained": {
+          "image_url": "/demo/images/TUM-TCGA-ACRLPPQE_pale_understained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9894,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0002,
+              "BACK": 0.0034,
+              "DEB": 0.9894,
+              "LYM": 0.0021,
+              "MUC": 0.0011,
+              "MUS": 0.0027,
+              "NORM": 0.0001,
+              "STR": 0.0002,
+              "TUM": 0.0008
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 1.0
+            }
+          }
+        },
+        "dark_overstained": {
+          "image_url": "/demo/images/TUM-TCGA-ACRLPPQE_dark_overstained.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.378,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0288,
+              "BACK": 0.1818,
+              "DEB": 0.378,
+              "LYM": 0.0407,
+              "MUC": 0.1527,
+              "MUS": 0.1519,
+              "NORM": 0.0077,
+              "STR": 0.0215,
+              "TUM": 0.037
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.9944,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0001,
+              "LYM": 0.0003,
+              "MUC": 0.0001,
+              "MUS": 0.0001,
+              "NORM": 0.0047,
+              "STR": 0.0003,
+              "TUM": 0.9944
+            }
+          }
+        },
+        "synthetic_warm_shift": {
+          "image_url": "/demo/images/TUM-TCGA-ACRLPPQE_synthetic_warm_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.766,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0119,
+              "BACK": 0.0684,
+              "DEB": 0.766,
+              "LYM": 0.0221,
+              "MUC": 0.0559,
+              "MUS": 0.0529,
+              "NORM": 0.0033,
+              "STR": 0.0068,
+              "TUM": 0.0127
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 0.9964,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0001,
+              "DEB": 0.0002,
+              "LYM": 0.0001,
+              "MUC": 0.0001,
+              "MUS": 0.0011,
+              "NORM": 0.001,
+              "STR": 0.001,
+              "TUM": 0.9964
+            }
+          }
+        },
+        "synthetic_cool_shift": {
+          "image_url": "/demo/images/TUM-TCGA-ACRLPPQE_synthetic_cool_shift.png",
+          "baseline": {
+            "predicted_class": "DEB",
+            "predicted_class_description": "Debris (Necrotic tissue & artifacts)",
+            "confidence": 0.9238,
+            "is_correct": false,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0053,
+              "DEB": 0.9238,
+              "LYM": 0.0001,
+              "MUC": 0.0005,
+              "MUS": 0.0691,
+              "NORM": 0.0,
+              "STR": 0.0001,
+              "TUM": 0.0011
+            }
+          },
+          "robust_stain_aug": {
+            "predicted_class": "TUM",
+            "predicted_class_description": "Colorectal adenocarcinoma epithelium (Tumor)",
+            "confidence": 1.0,
+            "is_correct": true,
+            "probabilities": {
+              "ADI": 0.0,
+              "BACK": 0.0,
+              "DEB": 0.0,
+              "LYM": 0.0,
+              "MUC": 0.0,
+              "MUS": 0.0,
+              "NORM": 0.0,
+              "STR": 0.0,
+              "TUM": 1.0
+            }
+          }
+        }
+      }
+    }
+  ]
+}
