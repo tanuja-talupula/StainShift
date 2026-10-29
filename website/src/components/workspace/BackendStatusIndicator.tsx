@@ -106,7 +106,32 @@ export function BackendStatusIndicator({ apiUrl, onApiUrlChange, onHealthUpdate 
               placeholder="http://localhost:8000"
               className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
-            <div className="flex items-center justify-end gap-2 pt-1">
+            <div className="flex items-center gap-1.5 pt-1">
+            <span className="text-[10px] text-slate-400 font-medium">Presets:</span>
+            <button
+              type="button"
+              onClick={() => {
+                setCustomUrl("https://stainshift-api.onrender.com");
+                onApiUrlChange("https://stainshift-api.onrender.com");
+                setIsEditing(false);
+              }}
+              className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-medium transition"
+            >
+              Render Cloud
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCustomUrl("http://localhost:8000");
+                onApiUrlChange("http://localhost:8000");
+                setIsEditing(false);
+              }}
+              className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-medium transition"
+            >
+              Localhost:8000
+            </button>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => {

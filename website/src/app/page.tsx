@@ -28,7 +28,8 @@ import {
   QueueFileItem,
 } from "@/lib/types";
 
-const DEFAULT_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const DEFAULT_API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://stainshift-api.onrender.com";
 
 export default function WorkspacePage() {
   const [apiUrl, setApiUrl] = useState<string>(DEFAULT_API_URL);
