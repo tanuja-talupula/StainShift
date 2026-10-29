@@ -62,5 +62,6 @@ htmlcov/
 node_modules/
 .next/
 out/
+.vercel/
 *.tsbuildinfo
 
