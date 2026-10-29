@@ -1,0 +1,58 @@
+{
+  "original": {
+    "baseline_acc": 97.42,
+    "baseline_drop": 0.0,
+    "robust_acc": 99.26,
+    "robust_drop": 0.0,
+    "recovery": 1.84,
+    "description": "Baseline unperturbed H&E stain (in-domain)"
+  },
+  "heavy_hematoxylin": {
+    "baseline_acc": 30.48,
+    "baseline_drop": -66.94,
+    "robust_acc": 30.57,
+    "robust_drop": -68.69,
+    "recovery": 0.09,
+    "description": "Lab A: Dark hyperchromatic nuclei, thick tissue slice"
+  },
+  "heavy_eosin": {
+    "baseline_acc": 25.87,
+    "baseline_drop": -71.55,
+    "robust_acc": 26.24,
+    "robust_drop": -73.02,
+    "recovery": 0.37,
+    "description": "Lab B: Vivid pink/red cytoplasm & stroma dominance"
+  },
+  "pale_understained": {
+    "baseline_acc": 29.28,
+    "baseline_drop": -68.14,
+    "robust_acc": 29.37,
+    "robust_drop": -69.89,
+    "recovery": 0.09,
+    "description": "Lab C: Rapid destaining, washed out weak contrast"
+  },
+  "dark_overstained": {
+    "baseline_acc": 30.57,
+    "baseline_drop": -66.85,
+    "robust_acc": 29.83,
+    "robust_drop": -69.43,
+    "recovery": -0.74,
+    "description": "Lab D: High reagent exposure, heavy global absorption"
+  },
+  "scanner_warm_shift": {
+    "baseline_acc": 27.62,
+    "baseline_drop": -69.8,
+    "robust_acc": 27.44,
+    "robust_drop": -71.82,
+    "recovery": -0.18,
+    "description": "Scanner X (Aperio-like): Warm yellowish-red calibration"
+  },
+  "scanner_cool_shift": {
+    "baseline_acc": 30.57,
+    "baseline_drop": -66.85,
+    "robust_acc": 32.97,
+    "robust_drop": -66.3,
+    "recovery": 2.39,
+    "description": "Scanner Y (Hamamatsu-like): Cool bluish-magenta bias"
+  }
+}
