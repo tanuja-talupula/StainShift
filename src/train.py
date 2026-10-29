@@ -108,12 +108,14 @@ def run_training(
     model_name: str = "baseline",
     train_mode: str = "train_standard",
     arch: str = "mobilenet_v3_small",
+    pretrained: bool = True,
     epochs: int = 5,
     batch_size: int = 32,
     lr: float = 3e-4,
     device: str = "cpu",
     seed: int = 42,
     dry_run: bool = False,
+    max_samples_per_class: Optional[int] = None,
     tracker: Optional[MLflowTracker] = None,
     log_models_to_mlflow: bool = False,
 ) -> Path:
@@ -139,6 +141,7 @@ def run_training(
         tracker.log_params({
             "model_name": model_name,
             "architecture": arch,
+            "pretrained": pretrained,
             "train_mode": train_mode,
             "epochs": epochs,
             "batch_size": batch_size,
@@ -158,11 +161,12 @@ def run_training(
         batch_size=batch_size,
         train_mode=train_mode,
         seed=seed,
+        max_samples_per_class=max_samples_per_class,
     )
 
     print(f"Dataset summary: Train={len(train_loader.dataset)}, Val={len(val_loader.dataset)}, Test={len(test_loader.dataset)}")
 
-    model = get_model(arch=arch, pretrained=True, num_classes=len(CLASS_NAMES)).to(dev)
+    model = get_model(arch=arch, pretrained=pretrained, num_classes=len(CLASS_NAMES)).to(dev)
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = CosineAnnealingLR(optimizer, T_max=max(epochs, 1))
@@ -256,10 +260,13 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", type=str, default="cpu")
+    parser.add_argument("--max_samples_per_class", type=int, default=None, help="Limit samples per class for bounded smoke tests")
+    parser.add_argument("--no_pretrained", action="store_true", help="Initialize model with random weights instead of pretrained torchvision weights")
     parser.add_argument("--dry-run", action="store_true", help="Validate setup without training")
     # MLflow arguments
     parser.add_argument("--use_mlflow", action="store_true", help="Enable MLflow experiment tracking")
     parser.add_argument("--mlflow_tracking_uri", type=str, default=os.getenv("MLFLOW_TRACKING_URI"), help="MLflow tracking URI")
+    parser.add_argument("--mlflow_artifact_root", type=str, default=os.getenv("MLFLOW_ARTIFACT_ROOT"), help="MLflow artifact storage root directory")
     parser.add_argument("--mlflow_experiment_name", type=str, default=os.getenv("MLFLOW_EXPERIMENT_NAME", "stainshift_benchmark"), help="MLflow experiment name")
     parser.add_argument("--run_type", type=str, default="smoke_test", choices=["smoke_test", "full_experiment"], help="Label run as smoke_test or full_experiment")
     parser.add_argument("--log_models_to_mlflow", action="store_true", help="Explicitly log checkpoint weights to MLflow")
@@ -270,6 +277,7 @@ if __name__ == "__main__":
         tracker = MLflowTracker(
             enabled=True,
             tracking_uri=args.mlflow_tracking_uri,
+            artifact_location=args.mlflow_artifact_root,
             experiment_name=args.mlflow_experiment_name,
             run_name=f"train_{args.model_name}",
             run_type=args.run_type,
@@ -284,12 +292,14 @@ if __name__ == "__main__":
             model_name=args.model_name,
             train_mode=args.train_mode,
             arch=args.arch,
+            pretrained=not args.no_pretrained,
             epochs=args.epochs,
             batch_size=args.batch_size,
             lr=args.lr,
             device=args.device,
             seed=args.seed,
             dry_run=args.dry_run,
+            max_samples_per_class=args.max_samples_per_class,
             tracker=tracker,
             log_models_to_mlflow=args.log_models_to_mlflow,
         )

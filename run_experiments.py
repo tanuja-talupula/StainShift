@@ -49,6 +49,7 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=3, help="Training epochs")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
     parser.add_argument("--lr", type=float, default=3e-4, help="Learning rate")
+    parser.add_argument("--max_samples_per_class", type=int, default=None, help="Limit samples per class for bounded smoke tests")
     parser.add_argument("--arch", type=str, default="mobilenet_v3_small", choices=["mobilenet_v3_small", "resnet18"])
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
@@ -56,6 +57,7 @@ def main() -> None:
     # MLflow arguments
     parser.add_argument("--use_mlflow", action="store_true", help="Enable MLflow experiment tracking")
     parser.add_argument("--mlflow_tracking_uri", type=str, default=os.getenv("MLFLOW_TRACKING_URI"), help="MLflow tracking URI")
+    parser.add_argument("--mlflow_artifact_root", type=str, default=os.getenv("MLFLOW_ARTIFACT_ROOT"), help="MLflow artifact storage root directory")
     parser.add_argument("--mlflow_experiment_name", type=str, default=os.getenv("MLFLOW_EXPERIMENT_NAME", "stainshift_benchmark"), help="MLflow experiment name")
     parser.add_argument("--run_type", type=str, default="smoke_test", choices=["smoke_test", "full_experiment"], help="Label run as smoke_test or full_experiment")
     parser.add_argument("--log_models_to_mlflow", action="store_true", help="Explicitly log checkpoint weights to MLflow")
@@ -92,6 +94,7 @@ def main() -> None:
         tracker = MLflowTracker(
             enabled=True,
             tracking_uri=args.mlflow_tracking_uri,
+            artifact_location=args.mlflow_artifact_root,
             experiment_name=args.mlflow_experiment_name,
             run_name="stainshift_benchmark_run",
             run_type=args.run_type,
@@ -140,6 +143,7 @@ def main() -> None:
                 lr=args.lr,
                 device=args.device,
                 seed=args.seed,
+                max_samples_per_class=args.max_samples_per_class,
                 tracker=tracker,
                 log_models_to_mlflow=args.log_models_to_mlflow,
             )
@@ -170,6 +174,7 @@ def main() -> None:
                 lr=args.lr,
                 device=args.device,
                 seed=args.seed,
+                max_samples_per_class=args.max_samples_per_class,
                 tracker=tracker,
                 log_models_to_mlflow=args.log_models_to_mlflow,
             )

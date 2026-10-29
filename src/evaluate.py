@@ -247,6 +247,7 @@ if __name__ == "__main__":
     # MLflow arguments
     parser.add_argument("--use_mlflow", action="store_true", help="Enable MLflow experiment tracking")
     parser.add_argument("--mlflow_tracking_uri", type=str, default=os.getenv("MLFLOW_TRACKING_URI"), help="MLflow tracking URI")
+    parser.add_argument("--mlflow_artifact_root", type=str, default=os.getenv("MLFLOW_ARTIFACT_ROOT"), help="MLflow artifact storage root directory")
     parser.add_argument("--mlflow_experiment_name", type=str, default=os.getenv("MLFLOW_EXPERIMENT_NAME", "stainshift_benchmark"), help="MLflow experiment name")
     parser.add_argument("--run_type", type=str, default="smoke_test", choices=["smoke_test", "full_experiment"], help="Label run as smoke_test or full_experiment")
     args = parser.parse_args()
@@ -257,6 +258,7 @@ if __name__ == "__main__":
         tracker = MLflowTracker(
             enabled=True,
             tracking_uri=args.mlflow_tracking_uri,
+            artifact_location=args.mlflow_artifact_root,
             experiment_name=args.mlflow_experiment_name,
             run_name=f"stress_test_{ckpt_stem}",
             run_type=args.run_type,

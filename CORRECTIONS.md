@@ -112,3 +112,17 @@ The existing JSON files in `experiments/`:
 1. **Biological and Physical Fidelity:** Synthetic OD modifications simulate dye concentration changes, but do not reproduce multi-center variation in tissue fixation, microtome slice thickness artifacts, illumination spectra, or scanner-specific sensor color response functions.
 2. **Slide-Level Grouping:** When patient or slide identifiers are absent from dataset filenames, splitting is performed at the patch level. While patch disjointness is strictly enforced, patient-level generalization requires slide-level grouping metadata.
 3. **Hardware / Compute:** No training on the full 100K or 7K datasets was initiated during this engineering repair phase, adhering to the non-negotiable rule prohibiting unauthorized expensive training runs.
+
+---
+
+## 4. MLflow Integration & Verification Log
+
+### Tracking Capabilities Added
+- Implemented optional, manual experiment tracking via `MLflowTracker` in `src/tracking.py` without requiring external dependencies by default.
+- CLI arguments `--use_mlflow`, `--mlflow_tracking_uri`, `--mlflow_artifact_root`, `--mlflow_experiment_name`, `--run_type`, and `--log_models_to_mlflow` integrated across `src/train.py`, `src/evaluate.py`, `run_experiments.py`, and `train_100k_val_7k.py`.
+- Explicit failure: If `--use_mlflow` is requested when `mlflow` is not installed in the environment, the tracker raises a loud, descriptive `ImportError` rather than silently disabling tracking.
+- Artifact store separation: Metadata (runs, metrics, parameters) is logged to the SQLite database URI (`--mlflow_tracking_uri sqlite:///mlflow.db`), while artifact files (confusion matrices, `eval_results.json`, per-profile classification reports) are saved to a separate directory specified by `--mlflow_artifact_root`.
+- Upstream SQLAlchemy Warning: During tests with local SQLite stores, SQLAlchemy 2.x emits `SADeprecationWarning: The 'noload' loader strategy is deprecated and will be removed in a future release.` from `mlflow/store/tracking/sqlalchemy_store.py:327`. This is an upstream MLflow 3.17 ORM mapper deprecation warning, not an application bug.
+- Automated Test Suite: Complete test suite expanded to 36 tests across `tests/`, covering CLI dry-runs, dataset augmentation initialization, loud error handling, split determinism and disjointness, Reinhard calibration, exact neutral identity bypass, safe checkpoint metadata validation, MLflow local tracking, separate artifact roots, and end-to-end synthetic training/evaluation loops.
+- Real-Data Status: End-to-end verification on real datasets (`NCT-CRC-HE-100K-NONORM`, `CRC-VAL-HE-7K`) is marked **Pending** as real data files are not present in the workspace.
+

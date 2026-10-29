@@ -77,8 +77,15 @@ StainShift provides two distinct training and evaluation workflows:
 ### Workflow A: Single-Cohort Stratified Benchmark (`run_experiments.py`)
 Uses `CRC-VAL-HE-7K` partitioned into stratified Train (70%), Validation (15%), and Test (15%) splits:
 - **Dry-run configuration check:**
+  Performs static path, directory, and CLI argument verification without executing training or evaluation:
   ```bash
   python run_experiments.py --dry-run
+  ```
+  *(Note: `--dry-run` validates file existence and arguments only; it does not train models, compute training curves, or generate evaluation metric tables).*
+- **Bounded Real-Data Smoke Test:**
+  Runs an actual 1-epoch, sample-limited execution on real data to test the end-to-end pipeline:
+  ```bash
+  python run_experiments.py --data_dir data/CRC-VAL-HE-7K-png --epochs 1 --max_samples_per_class 10 --batch_size 16 --use_mlflow --run_type smoke_test
   ```
 - **Train and stress-test:**
   ```bash
@@ -127,43 +134,79 @@ Trains on `NCT-CRC-HE-100K-NONORM` and evaluates generalization on `CRC-VAL-HE-7
 
 StainShift includes optional, manual experiment tracking using MLflow.
 Tracking is **disabled by default**, allowing scripts to execute without requiring an MLflow server or local database.
+If `--use_mlflow` is explicitly requested but the `mlflow` package is not installed, execution fails immediately with an informative `ImportError`.
 
 ### Enabling MLflow Tracking
 Pass `--use_mlflow` when executing training, evaluation, or the master experiment runner:
 ```bash
-# Recommended: Local SQLite database store
-python run_experiments.py --use_mlflow --mlflow_tracking_uri sqlite:///mlflow.db --mlflow_experiment_name stainshift_benchmark --run_type smoke_test
+# Recommended: Local SQLite database store with explicit artifact directory
+python run_experiments.py --use_mlflow \
+    --mlflow_tracking_uri sqlite:///mlflow.db \
+    --mlflow_artifact_root ./mlflow_artifacts \
+    --mlflow_experiment_name stainshift_benchmark \
+    --run_type smoke_test
 ```
 
 ### CLI Tracking Arguments
-- `--use_mlflow`: Enables manual tracking.
-- `--mlflow_tracking_uri`: Backend store URI (e.g. `sqlite:///mlflow.db` or environment variable `MLFLOW_TRACKING_URI`).
+- `--use_mlflow`: Enables manual tracking. Fails loudly if `mlflow` is unavailable.
+- `--mlflow_tracking_uri`: Relational backend store URI (e.g. `sqlite:///mlflow.db` or environment variable `MLFLOW_TRACKING_URI`). Stores run metadata, parameters, tags, and scalar metrics.
+- `--mlflow_artifact_root`: Artifact storage directory (e.g. `./mlflow_artifacts` or environment variable `MLFLOW_ARTIFACT_ROOT`). Stores evaluation summaries, classification reports, plots, and optional checkpoints.
 - `--mlflow_experiment_name`: Experiment name in MLflow (default: `stainshift_benchmark`).
-- `--run_type`: Explicit tag: `smoke_test` or `full_experiment`.
+- `--run_type`: Explicit tag: `smoke_test` or `full_experiment`. **Important:** This flag only labels the run in MLflow; it does NOT automatically limit epochs or dataset samples. For bounded execution, combine with `--epochs` and `--max_samples_per_class`.
 - `--log_models_to_mlflow`: Optional flag to log `.pth` checkpoint weights (disabled by default to prevent storage bloat).
+
+> [!WARNING]
+> **Artifact Storage Distinction:** Relocating or copying `mlflow.db` **does not** relocate or copy your artifacts! The SQLite database stores only run metadata, metric series, and parameters. Artifact files (confusion matrices, `eval_results.json`, classification reports) reside in `--mlflow_artifact_root` (or `./mlruns`). You must preserve and copy both.
 
 ### Viewing Experiment Runs in MLflow UI
 Launch the interactive web UI:
 ```bash
-mlflow ui --backend-store-uri sqlite:///mlflow.db
+mlflow ui --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlflow_artifacts
 ```
 Then navigate in your browser to `http://127.0.0.1:5000`.
 
-### Persistence in Google Colab
-By default, files saved in Google Colab ephemeral disk (`/content`) are destroyed when the runtime disconnects.
-To persist your MLflow runs, SQLite database, and artifacts:
-1. Mount Google Drive:
-   ```python
-   from google.colab import drive
-   drive.mount('/content/drive')
-   ```
-2. Set the tracking URI to your Drive directory:
-   ```bash
-   python run_experiments.py --use_mlflow \
-       --mlflow_tracking_uri "sqlite:////content/drive/MyDrive/stainshift/mlflow.db" \
-       --mlflow_experiment_name "colab_benchmark"
-   ```
-This ensures runs, parameters, metrics, and JSON artifacts persist permanently in your Google Drive.
+### Persistence & Safe Backup in Google Colab
+By default, files saved on the Google Colab ephemeral disk (`/content`) are lost when the instance disconnects.
+Because active SQLite database connections can be corrupted if copied while open, follow this safe backup-and-restore procedure:
+
+#### Step 1: Mount Google Drive
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+```
+
+#### Step 2: Run Bounded Experiment Locally on High-Speed Ephemeral Disk
+Run training on `/content` for fast local I/O:
+```bash
+python run_experiments.py \
+    --data_dir /content/CRC-VAL-HE-7K \
+    --epochs 1 --max_samples_per_class 10 --batch_size 16 \
+    --use_mlflow \
+    --mlflow_tracking_uri "sqlite:////content/mlflow.db" \
+    --mlflow_artifact_root "/content/mlflow_artifacts" \
+    --run_type smoke_test
+```
+
+#### Step 3: Backup Metadata & Artifacts to Google Drive (Safely Closed)
+Ensure the Python script has finished executing (closing all SQLite transactions and database handles):
+```bash
+mkdir -p /content/drive/MyDrive/stainshift_backup
+# 1. Backup relational metadata store
+cp /content/mlflow.db /content/drive/MyDrive/stainshift_backup/mlflow.db
+# 2. Backup artifacts directory
+cp -r /content/mlflow_artifacts /content/drive/MyDrive/stainshift_backup/mlflow_artifacts
+```
+
+#### Step 4: Restore in a Future Colab Session
+To resume or inspect previous runs in a fresh Colab session:
+```bash
+# Copy persisted files back to local /content
+cp /content/drive/MyDrive/stainshift_backup/mlflow.db /content/mlflow.db
+cp -r /content/drive/MyDrive/stainshift_backup/mlflow_artifacts /content/mlflow_artifacts
+
+# Launch the MLflow UI pointing to both stores
+mlflow ui --backend-store-uri sqlite:////content/mlflow.db --default-artifact-root /content/mlflow_artifacts &
+```
 
 ---
 

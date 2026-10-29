@@ -234,6 +234,7 @@ def get_data_splits(
     test_ratio: float = 0.15,
     seed: int = 42,
     patient_grouping: bool = False,
+    max_samples_per_class: Optional[int] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
     """
     Creates or loads stratified train / val / test splits across all classes.
@@ -301,6 +302,8 @@ def get_data_splits(
         # Sort before shuffling to guarantee platform-independent determinism
         files.sort()
         rng.shuffle(files)
+        if max_samples_per_class is not None and len(files) > max_samples_per_class:
+            files = files[:max_samples_per_class]
 
         n = len(files)
         if n >= 3:
@@ -384,10 +387,11 @@ def build_dataloaders(
     num_workers: int = 0,
     train_mode: str = "train_standard",
     seed: int = 42,
+    max_samples_per_class: Optional[int] = None,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """Builds PyTorch DataLoaders for train, val, and test splits."""
     train_split, val_split, test_split = get_data_splits(
-        data_dir, splits_cache=splits_cache, seed=seed
+        data_dir, splits_cache=splits_cache, seed=seed, max_samples_per_class=max_samples_per_class
     )
 
     train_ds = CRCDataset(

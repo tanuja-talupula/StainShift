@@ -54,6 +54,7 @@ class MLflowTracker:
         self,
         enabled: bool = False,
         tracking_uri: Optional[str] = None,
+        artifact_location: Optional[str] = None,
         experiment_name: str = "stainshift_benchmark",
         run_name: Optional[str] = None,
         run_type: str = "smoke_test",
@@ -62,6 +63,7 @@ class MLflowTracker:
     ):
         self.enabled = bool(enabled and MLFLOW_AVAILABLE)
         self.tracking_uri = tracking_uri
+        self.artifact_location = artifact_location
         self.experiment_name = experiment_name
         self.run_name = run_name
         self.run_type = run_type
@@ -69,9 +71,9 @@ class MLflowTracker:
         self._active_run = None
 
         if enabled and not MLFLOW_AVAILABLE:
-            logger.warning(
-                "MLflow tracking was requested but 'mlflow' is not installed. "
-                "Tracking is disabled. Install with: pip install mlflow"
+            raise ImportError(
+                "MLflow tracking was explicitly requested via --use_mlflow, but the 'mlflow' "
+                "package is not installed. Install it with 'pip install mlflow' or run without --use_mlflow."
             )
 
         self.initial_tags = {
@@ -94,7 +96,15 @@ class MLflowTracker:
         if self.tracking_uri:
             mlflow.set_tracking_uri(self.tracking_uri)
 
-        mlflow.set_experiment(self.experiment_name)
+        exp = mlflow.get_experiment_by_name(self.experiment_name)
+        if exp is None:
+            if self.artifact_location:
+                mlflow.create_experiment(self.experiment_name, artifact_location=self.artifact_location)
+                mlflow.set_experiment(self.experiment_name)
+            else:
+                mlflow.set_experiment(self.experiment_name)
+        else:
+            mlflow.set_experiment(self.experiment_name)
 
         combined_tags = dict(self.initial_tags)
         if tags:
