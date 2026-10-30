@@ -19,7 +19,7 @@ export function DemoExplorer({ manifest }: Props) {
   return (
     <div className="space-y-8">
       {/* Selection Rules & Manifest Attribution Card */}
-      <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#E8E4DD] shadow-xs space-y-2.5">
+      <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E8E4DD] shadow-xs space-y-1.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2 text-charcoal-700">
             <ShieldCheck className="w-4 h-4 text-[#2D5A46] flex-shrink-0" />
@@ -32,7 +32,7 @@ export function DemoExplorer({ manifest }: Props) {
           </span>
         </div>
         <p className="text-xs text-charcoal-500 leading-relaxed">
-          {manifest.metadata.disclaimer} Each probability distribution is generated directly from the Stage A PyTorch weights.
+          Deterministic held-out test patches evaluated across all 8 synthetic stain profiles with zero backend connection required.
         </p>
       </div>
 

@@ -64,4 +64,5 @@ node_modules/
 out/
 .vercel/
 *.tsbuildinfo
+.agents/
 

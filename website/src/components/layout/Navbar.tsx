@@ -22,18 +22,12 @@ export function Navbar() {
           {/* Logo / Brand */}
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
-              {/* Claude-inspired warm terracotta sun/microscope icon */}
               <div className="w-8 h-8 rounded-full bg-[#CC785C] flex items-center justify-center text-white shadow-sm group-hover:bg-[#B96449] transition">
                 <Microscope className="w-4 h-4 text-white" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-serif text-xl font-medium tracking-tight text-charcoal-900 group-hover:text-charcoal-700 transition">
-                  StainShift
-                </span>
-                <span className="hidden sm:inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#F3EFEA] text-charcoal-600 border border-[#E8E4DD]">
-                  AI Workspace
-                </span>
-              </div>
+              <span className="font-serif text-xl font-medium tracking-tight text-charcoal-900 group-hover:text-charcoal-700 transition">
+                StainShift
+              </span>
             </Link>
           </div>
 
@@ -62,23 +56,17 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Right Action Buttons */}
-          <div className="hidden sm:flex items-center gap-2.5">
+          {/* Right Action: Clean GitHub Link */}
+          <div className="hidden sm:flex items-center gap-3">
             <a
               href="https://github.com/tanuja-talupula/StainShift"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-charcoal-600 bg-white border border-[#E8E4DD] hover:bg-[#F7F4EE] hover:text-charcoal-900 transition shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-charcoal-600 bg-white border border-[#E8E4DD] hover:bg-[#F7F4EE] hover:text-charcoal-900 transition shadow-2xs"
             >
               <span>GitHub</span>
               <ExternalLink className="w-3 h-3 text-charcoal-400" />
             </a>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium text-white bg-charcoal-900 hover:bg-charcoal-800 transition shadow-sm"
-            >
-              <span>Run Inference</span>
-            </Link>
           </div>
 
           {/* Mobile menu toggle */}
@@ -119,22 +107,15 @@ export function Navbar() {
               </Link>
             );
           })}
-          <div className="pt-2 border-t border-[#E8E4DD] flex gap-2">
+          <div className="pt-2 border-t border-[#E8E4DD]">
             <a
               href="https://github.com/tanuja-talupula/StainShift"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 text-center py-2 text-xs font-medium text-charcoal-700 bg-white border border-[#E8E4DD] rounded-full"
+              className="block text-center py-2 text-xs font-medium text-charcoal-700 bg-white border border-[#E8E4DD] rounded-full"
             >
-              GitHub
+              GitHub Repository
             </a>
-            <Link
-              href="/"
-              onClick={() => setMobileOpen(false)}
-              className="flex-1 text-center py-2 text-xs font-medium text-white bg-charcoal-900 rounded-full"
-            >
-              Inference
-            </Link>
           </div>
         </div>
       )}

@@ -37,7 +37,6 @@ export function StainControls({
           <label className="text-xs font-semibold uppercase tracking-wider text-charcoal-700">
             2. Stain Shift Condition
           </label>
-          <span className="text-[11px] text-charcoal-400 font-mono">Physics-Based Simulation</span>
         </div>
 
         <select
@@ -57,45 +56,38 @@ export function StainControls({
         </p>
       </div>
 
-      {/* Intensity Slider */}
-      <div className="space-y-2 pt-1 border-t border-[#E8E4DD]/60">
-        <div className="flex items-center justify-between text-xs">
-          <label className="font-medium text-charcoal-700 flex items-center gap-1.5">
-            <Sliders className="w-3.5 h-3.5 text-charcoal-400" />
-            <span>Shift Intensity Strength</span>
-          </label>
-          <span className="font-mono text-xs font-semibold text-charcoal-900 px-2 py-0.5 rounded-full bg-[#EDE7DE]">
-            {isOriginal ? "N/A" : `${intensity.toFixed(2)}x`}
-          </span>
-        </div>
+      {/* Intensity Slider — Hidden completely when Original condition is selected */}
+      {!isOriginal && (
+        <div className="space-y-2 pt-2 border-t border-[#E8E4DD]/60">
+          <div className="flex items-center justify-between text-xs">
+            <label className="font-medium text-charcoal-700 flex items-center gap-1.5">
+              <Sliders className="w-3.5 h-3.5 text-charcoal-400" />
+              <span>Shift Intensity</span>
+            </label>
+            <span className="font-mono text-xs font-semibold text-charcoal-900 px-2 py-0.5 rounded-full bg-[#EDE7DE]">
+              {intensity.toFixed(2)}x
+            </span>
+          </div>
 
-        <div className="space-y-1">
-          <input
-            type="range"
-            min="0.0"
-            max="2.0"
-            step="0.05"
-            value={intensity}
-            disabled={isOriginal}
-            onChange={(e) => onIntensityChange(parseFloat(e.target.value))}
-            aria-label="Stain Shift Intensity Slider"
-            className={`w-full h-1.5 bg-[#E8E4DD] rounded-lg appearance-none cursor-pointer accent-[#CC785C] ${
-              isOriginal ? "opacity-40 cursor-not-allowed" : ""
-            }`}
-          />
-          <div className="flex justify-between text-[10px] text-charcoal-400 font-mono">
-            <span>0.0x (Neutral)</span>
-            <span>1.0x (Calibrated)</span>
-            <span>2.0x (Severe)</span>
+          <div className="space-y-1">
+            <input
+              type="range"
+              min="0.0"
+              max="2.0"
+              step="0.05"
+              value={intensity}
+              onChange={(e) => onIntensityChange(parseFloat(e.target.value))}
+              aria-label="Stain Shift Intensity Slider"
+              className="w-full h-1.5 bg-[#E8E4DD] rounded-lg appearance-none cursor-pointer accent-[#CC785C]"
+            />
+            <div className="flex justify-between text-[10px] text-charcoal-400 font-mono">
+              <span>0.0x (Neutral)</span>
+              <span>1.0x (Calibrated)</span>
+              <span>2.0x (Severe)</span>
+            </div>
           </div>
         </div>
-
-        {isOriginal && (
-          <p className="text-[10px] text-charcoal-400 italic">
-            Intensity disabled for Original condition (exact unperturbed pixels).
-          </p>
-        )}
-      </div>
+      )}
     </div>
   );
 }

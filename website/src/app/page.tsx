@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import {
   Play,
   RefreshCw,
-  Sparkles,
   BarChart2,
   Eye,
   ArrowRight,
-  Database,
+  ArrowDown,
+  Layers,
 } from "lucide-react";
 import { BackendStatusIndicator } from "@/components/workspace/BackendStatusIndicator";
 import { ModelSelector } from "@/components/workspace/ModelSelector";
@@ -47,11 +47,17 @@ export default function WorkspacePage() {
   const [summary, setSummary] = useState<BatchSummary | null>(null);
   const [activeResult, setActiveResult] = useState<ImageInferenceResult | null>(null);
 
+  const workspaceRef = useRef<HTMLDivElement>(null);
+
+  const scrollToWorkspace = () => {
+    workspaceRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   // File queue management
   const handleAddFiles = (files: File[]) => {
     setErrorMessage(null);
     const newItems: QueueFileItem[] = files.map((file) => {
-      const isImage = file.type.startsWith("image/") || /\.(png|jpe?g|tiff?)$/i.test(file.name);
+      const isImage = file.type.startsWith("image/") || /\.(png|jpe?g)$/i.test(file.name);
       return {
         id: `${file.name}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         file,
@@ -93,13 +99,13 @@ export default function WorkspacePage() {
   // Inference Execution
   const handleRunPrediction = async () => {
     if (queue.length === 0) {
-      setErrorMessage("Please select at least one image or ZIP file to run inference.");
+      setErrorMessage("Please select at least one histology patch to run prediction.");
       return;
     }
 
     setIsRunning(true);
     setErrorMessage(null);
-    setProgressText(`Sending ${queue.length} file(s) to inference backend...`);
+    setProgressText(`Evaluating ${queue.length} patch${queue.length !== 1 ? "es" : ""}...`);
 
     // Mark items as processing
     setQueue((prev) => prev.map((item) => ({ ...item, status: "processing" })));
@@ -156,111 +162,137 @@ export default function WorkspacePage() {
   };
 
   return (
-    <div className="space-y-10">
-      {/* Workspace Editorial Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#E8E4DD] pb-8">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#EDE7DE] text-charcoal-700 text-xs font-medium">
-              <Sparkles className="w-3.5 h-3.5 text-[#CC785C]" />
-              <span>Interactive AI Workspace</span>
-            </span>
-            <span className="text-xs text-charcoal-400 font-mono">MobileNetV3-Small (PyTorch)</span>
-          </div>
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-charcoal-900 tracking-tight leading-tight">
-            Histopathology Stain-Shift Inference
-          </h1>
-          <p className="text-sm sm:text-base text-charcoal-600 max-w-2xl leading-relaxed">
-            Upload colorectal adenocarcinoma patches, apply physics-informed Beer-Lambert stain variations,
-            and inspect real model predictions with full 9-class softmax distributions.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <BackendStatusIndicator
-            apiUrl={apiUrl}
-            onApiUrlChange={setApiUrl}
-            onHealthUpdate={setBackendHealth}
-          />
-        </div>
-      </div>
-
-      {/* Main Two-Column Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Control Panel (5 Cols) */}
-        <div className="lg:col-span-5 space-y-6 bg-white p-6 rounded-2xl border border-[#E8E4DD] shadow-sm">
-          {/* 1. Model Selector */}
-          <ModelSelector
-            selectedModel={selectedModel}
-            onSelectModel={setSelectedModel}
-          />
-
-          {/* 2. Stain Shift Controls */}
-          <StainControls
-            selectedCondition={selectedCondition}
-            onSelectCondition={setSelectedCondition}
-            intensity={intensity}
-            onIntensityChange={setIntensity}
-          />
-
-          {/* 3. Image Uploader */}
-          <ImageUploader
-            queue={queue}
-            onAddFiles={handleAddFiles}
-            onRemoveFile={handleRemoveFile}
-            onClearQueue={handleClearQueue}
-            disabled={isRunning}
-          />
-
-          {/* Error Notice */}
-          {errorMessage && (
-            <div className="p-3.5 bg-[#FBEFEF] border border-[#F2D6D6] rounded-xl text-xs text-[#9B2A2A] space-y-1">
-              <p className="font-semibold">Inference Request Failed</p>
-              <p className="text-[11px] leading-relaxed font-mono">{errorMessage}</p>
-            </div>
-          )}
-
-          {/* Run Prediction Button */}
-          <div className="space-y-2 pt-2">
-            <button
-              type="button"
-              onClick={handleRunPrediction}
-              disabled={isRunning || queue.length === 0}
-              className={`w-full py-3.5 px-4 rounded-xl font-medium text-sm text-white shadow-sm transition flex items-center justify-center gap-2 ${
-                isRunning || queue.length === 0
-                  ? "bg-[#DDD8CF] text-charcoal-400 cursor-not-allowed shadow-none"
-                  : "bg-charcoal-900 hover:bg-charcoal-800 active:scale-[0.99]"
-              }`}
-            >
-              {isRunning ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                  <span>{progressText || "Computing Predictions..."}</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 fill-white text-white" />
-                  <span>
-                    Run Prediction {queue.length > 0 ? `(${queue.length} file${queue.length !== 1 ? "s" : ""})` : ""}
-                  </span>
-                </>
-              )}
-            </button>
-
-            <p className="text-[10px] text-charcoal-400 text-center">
-              Direct PyTorch forward pass on active device. Zero synthetic logits or browser simulations.
+    <div className="space-y-12">
+      {/* Hero Section */}
+      <section className="space-y-6 pt-2 pb-6 border-b border-[#E8E4DD]">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3 max-w-3xl">
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-charcoal-900 tracking-tight leading-tight">
+              Evaluating CNN Robustness Under H&E Stain Variations
+            </h1>
+            <p className="text-sm sm:text-base text-charcoal-600 leading-relaxed">
+              StainShift evaluates how synthetic histopathology stain variations affect CNN classification performance.
+              Compare standard empirical training against physics-informed Beer-Lambert stain augmentation on colorectal tissue.
             </p>
+            <div className="pt-2 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={scrollToWorkspace}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-white text-xs font-medium shadow-sm transition"
+              >
+                <span>Try StainShift</span>
+                <ArrowDown className="w-3.5 h-3.5 text-white/80" />
+              </button>
+              <Link
+                href="/dashboard/"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#E8E4DD] hover:bg-[#FAF8F5] text-charcoal-700 text-xs font-medium transition"
+              >
+                <span>View Benchmark</span>
+                <ArrowRight className="w-3.5 h-3.5 text-charcoal-400" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <BackendStatusIndicator
+              apiUrl={apiUrl}
+              onApiUrlChange={setApiUrl}
+              onHealthUpdate={setBackendHealth}
+            />
           </div>
         </div>
+      </section>
 
-        {/* Right Preview & Prediction Panel (7 Cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          <PredictionResultView
-            result={activeResult}
-            activeModelId={selectedModel}
-          />
+      {/* Main Interactive AI Workspace */}
+      <section ref={workspaceRef} className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#CC785C]" />
+            <h2 className="font-serif text-xl font-medium text-charcoal-900">
+              Interactive Inference
+            </h2>
+          </div>
+          <span className="text-xs text-charcoal-400 font-mono">
+            Workflow: Upload → Select Condition → Run Prediction
+          </span>
         </div>
-      </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Control Panel (5 Cols) */}
+          <div className="lg:col-span-5 space-y-6 bg-white p-6 rounded-2xl border border-[#E8E4DD] shadow-sm">
+            {/* 1. Model Selector */}
+            <ModelSelector
+              selectedModel={selectedModel}
+              onSelectModel={setSelectedModel}
+            />
+
+            {/* 2. Stain Shift Controls (intensity slider hidden when original) */}
+            <StainControls
+              selectedCondition={selectedCondition}
+              onSelectCondition={setSelectedCondition}
+              intensity={intensity}
+              onIntensityChange={setIntensity}
+            />
+
+            {/* 3. Image Uploader */}
+            <ImageUploader
+              queue={queue}
+              onAddFiles={handleAddFiles}
+              onRemoveFile={handleRemoveFile}
+              onClearQueue={handleClearQueue}
+              disabled={isRunning}
+            />
+
+            {/* Error Notice */}
+            {errorMessage && (
+              <div className="p-3.5 bg-[#FBEFEF] border border-[#F2D6D6] rounded-xl text-xs text-[#9B2A2A] space-y-1">
+                <p className="font-semibold">Inference Request Failed</p>
+                <p className="text-[11px] leading-relaxed font-mono">{errorMessage}</p>
+              </div>
+            )}
+
+            {/* Run Prediction Button */}
+            <div className="space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={handleRunPrediction}
+                disabled={isRunning || queue.length === 0}
+                className={`w-full py-3.5 px-4 rounded-xl font-medium text-sm text-white shadow-sm transition flex items-center justify-center gap-2 ${
+                  isRunning || queue.length === 0
+                    ? "bg-[#DDD8CF] text-charcoal-400 cursor-not-allowed shadow-none"
+                    : "bg-charcoal-900 hover:bg-charcoal-800 active:scale-[0.99]"
+                }`}
+              >
+                {isRunning ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                    <span>{progressText || "Evaluating..."}</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-white text-white" />
+                    <span>
+                      Run Prediction {queue.length > 0 ? `(${queue.length} patch${queue.length !== 1 ? "es" : ""})` : ""}
+                    </span>
+                  </>
+                )}
+              </button>
+
+              <p className="text-[11px] text-charcoal-500 text-center">
+                Live PyTorch inference using MobileNetV3-Small on CPU.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Preview & Prediction Panel (7 Cols) */}
+          <div className="lg:col-span-7 space-y-6">
+            <PredictionResultView
+              result={activeResult}
+              activeModelId={selectedModel}
+            />
+          </div>
+        </div>
+      </section>
 
       {/* Bottom Batch Results Table & CSV Export */}
       {results.length > 0 && (
@@ -273,11 +305,11 @@ export default function WorkspacePage() {
         />
       )}
 
-      {/* Secondary Navigation & Research Resources */}
-      <div className="border-t border-[#E8E4DD] pt-10 mt-16 space-y-6">
+      {/* Secondary Cards */}
+      <div className="border-t border-[#E8E4DD] pt-10 space-y-6">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-charcoal-500">
-            Empirical Benchmark & Exploration
+            Benchmark & Examples
           </span>
           <span className="text-xs text-charcoal-400 font-mono">CRC-VAL-HE-7K Single-Cohort Study</span>
         </div>
@@ -296,7 +328,7 @@ export default function WorkspacePage() {
               </h3>
               <p className="text-xs text-charcoal-500 mt-1 leading-relaxed">
                 Full 1,077-patch held-out evaluation across all 8 stain conditions.
-                Inspect accuracy recovery from 33.89% to 97.68% and hardware execution benchmarks.
+                Inspect accuracy recovery from 33.9% to 97.7% and hardware execution benchmarks.
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#CC785C] mt-4">
@@ -314,15 +346,15 @@ export default function WorkspacePage() {
                 <Eye className="w-4 h-4" />
               </div>
               <h3 className="font-serif text-lg font-medium text-charcoal-900">
-                Verified Precomputed Demo
+                Demo Explorer
               </h3>
               <p className="text-xs text-charcoal-500 mt-1 leading-relaxed">
-                Deterministic 72-patch explorer with verified predictions generated directly from Stage A weights.
-                Requires zero active backend connection.
+                Explore 72 pre-evaluated tissue patches across all 8 stain conditions instantly.
+                Precomputed predictions require zero backend connection.
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#CC785C] mt-4">
-              <span>Explore sample patches</span>
+              <span>Explore patches</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition" />
             </span>
           </Link>

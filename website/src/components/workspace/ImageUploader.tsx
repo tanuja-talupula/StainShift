@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { UploadCloud, FileImage, Archive, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { UploadCloud, FileImage, Trash2, CheckCircle, AlertCircle } from "lucide-react";
 import { QueueFileItem } from "@/lib/types";
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
   disabled?: boolean;
 }
 
-const SUPPORTED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".zip"];
+const SUPPORTED_EXTENSIONS = [".png", ".jpg", ".jpeg"];
 
 export function ImageUploader({
   queue,
@@ -60,7 +60,7 @@ export function ImageUploader({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-xs font-semibold uppercase tracking-wider text-charcoal-700">
-          3. Upload Pathology Images
+          3. Upload Histology Patches
         </label>
         {queue.length > 0 && (
           <button
@@ -70,7 +70,7 @@ export function ImageUploader({
             className="text-[11px] text-charcoal-400 hover:text-charcoal-700 flex items-center gap-1 transition"
           >
             <Trash2 className="w-3 h-3" />
-            <span>Clear Queue</span>
+            <span>Clear</span>
           </button>
         )}
       </div>
@@ -106,15 +106,15 @@ export function ImageUploader({
           </div>
           <div>
             <span className="text-xs font-medium text-charcoal-900">
-              Drop images or ZIP archive here
+              Drop histology patches here (PNG, JPG)
             </span>
             <span className="text-xs text-charcoal-500"> or </span>
             <span className="text-xs font-semibold text-[#CC785C] underline underline-offset-2">
               browse files
             </span>
           </div>
-          <p className="text-[11px] text-charcoal-400 max-w-xs">
-            Supports single image, batch files, or dataset ZIP (PNG, JPG, TIFF)
+          <p className="text-[11px] text-charcoal-400">
+            Select one or multiple patches for immediate inference
           </p>
         </div>
       </div>
@@ -123,8 +123,8 @@ export function ImageUploader({
       {queue.length > 0 && (
         <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
           <div className="flex items-center justify-between text-[11px] text-charcoal-400 px-1">
-            <span>{queue.length} file{queue.length !== 1 ? "s" : ""} in queue</span>
-            <span>{queue.filter((q) => q.status === "completed").length} completed</span>
+            <span>{queue.length} file{queue.length !== 1 ? "s" : ""} selected</span>
+            <span>{queue.filter((q) => q.status === "completed").length} evaluated</span>
           </div>
 
           {queue.map((item) => (
@@ -139,10 +139,6 @@ export function ImageUploader({
                     alt={item.name}
                     className="w-8 h-8 rounded-lg object-cover border border-[#E8E4DD] flex-shrink-0"
                   />
-                ) : item.name.endsWith(".zip") ? (
-                  <div className="w-8 h-8 rounded-lg bg-[#FAF8F5] border border-[#E8E4DD] flex items-center justify-center flex-shrink-0">
-                    <Archive className="w-4 h-4 text-charcoal-500" />
-                  </div>
                 ) : (
                   <div className="w-8 h-8 rounded-lg bg-[#FAF8F5] border border-[#E8E4DD] flex items-center justify-center flex-shrink-0">
                     <FileImage className="w-4 h-4 text-charcoal-400" />
