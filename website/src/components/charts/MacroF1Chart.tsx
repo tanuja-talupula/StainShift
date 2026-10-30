@@ -11,10 +11,10 @@ export function MacroF1Chart({ baselineResults, robustResults, conditions }: Pro
   const chartHeight = 220;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+    <div className="bg-white rounded-2xl border border-[#E8E4DD] p-6 shadow-sm space-y-6">
       <div>
-        <h3 className="text-base font-bold text-slate-900">Macro F1 Score by Condition</h3>
-        <p className="text-xs text-slate-500">
+        <h3 className="font-serif text-lg font-medium text-charcoal-900">Macro F1 Score by Condition</h3>
+        <p className="text-xs text-charcoal-500 mt-0.5">
           Unweighted average of F1 across all 9 colorectal tissue classes (accounting for class imbalance).
         </p>
       </div>
@@ -26,8 +26,8 @@ export function MacroF1Chart({ baselineResults, robustResults, conditions }: Pro
               const y = chartHeight - val * chartHeight + 15;
               return (
                 <g key={val}>
-                  <line x1="45" y1={y} x2="560" y2={y} stroke="#e2e8f0" strokeDasharray="3 3" />
-                  <text x="35" y={y + 3} textAnchor="end" fontSize="10" fill="#64748b" className="font-mono">
+                  <line x1="45" y1={y} x2={560} y2={y} stroke="#EDE7DE" strokeDasharray="3 3" />
+                  <text x="35" y={y + 3} textAnchor="end" fontSize="10" fill="#8C857B" className="font-mono">
                     {val.toFixed(2)}
                   </text>
                 </g>
@@ -45,13 +45,13 @@ export function MacroF1Chart({ baselineResults, robustResults, conditions }: Pro
 
               return (
                 <g key={cond}>
-                  <rect x={x} y={bY} width="16" height={bHeight} fill="#94a3b8" rx="2" />
-                  <text x={x + 8} y={bY - 4} textAnchor="middle" fontSize="8.5" fill="#475569" className="font-mono">
+                  <rect x={x} y={bY} width="16" height={bHeight} fill="#A8A196" rx="3" />
+                  <text x={x + 8} y={bY - 4} textAnchor="middle" fontSize="8.5" fill="#5A554D" className="font-mono">
                     {bF1.toFixed(2)}
                   </text>
 
-                  <rect x={x + 18} y={rY} width="16" height={rHeight} fill="#0284c7" rx="2" />
-                  <text x={x + 26} y={rY - 4} textAnchor="middle" fontSize="8.5" fill="#0369a1" className="font-mono font-bold">
+                  <rect x={x + 18} y={rY} width="16" height={rHeight} fill="#CC785C" rx="3" />
+                  <text x={x + 26} y={rY - 4} textAnchor="middle" fontSize="8.5" fill="#7D3B29" className="font-mono font-bold">
                     {rF1.toFixed(2)}
                   </text>
 
@@ -59,11 +59,11 @@ export function MacroF1Chart({ baselineResults, robustResults, conditions }: Pro
                     x={x + 17}
                     y={chartHeight + 32}
                     textAnchor="middle"
-                    fontSize="9"
-                    fill="#334155"
-                    className="font-medium"
+                    fontSize="8.5"
+                    fill="#3D3A37"
+                    className="font-sans"
                   >
-                    {cond.replace(/_/g, " ")}
+                    {cond.replace(/_/g, " ").slice(0, 8)}
                   </text>
                 </g>
               );

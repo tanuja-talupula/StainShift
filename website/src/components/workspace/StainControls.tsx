@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sliders, Sparkles, AlertCircle } from "lucide-react";
+import { Sliders } from "lucide-react";
 
 export const STAIN_CONDITIONS = [
   { id: "original", name: "Original (Unperturbed)", desc: "Exact native RGB pixels without deconvolution loss" },
@@ -34,16 +34,16 @@ export function StainControls({
       {/* Condition Selector */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+          <label className="text-xs font-semibold uppercase tracking-wider text-charcoal-700">
             2. Stain Shift Condition
           </label>
-          <span className="text-[11px] text-slate-400">Physics-Based Simulation</span>
+          <span className="text-[11px] text-charcoal-400 font-mono">Physics-Based Simulation</span>
         </div>
 
         <select
           value={selectedCondition}
           onChange={(e) => onSelectCondition(e.target.value)}
-          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-medium text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3.5 py-2.5 rounded-xl border border-[#E8E4DD] bg-white text-xs font-medium text-charcoal-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#CC785C] transition"
         >
           {STAIN_CONDITIONS.map((c) => (
             <option key={c.id} value={c.id}>
@@ -52,50 +52,47 @@ export function StainControls({
           ))}
         </select>
 
-        <p className="text-[11px] text-slate-500">
+        <p className="text-[11px] text-charcoal-500">
           {STAIN_CONDITIONS.find((c) => c.id === selectedCondition)?.desc}
         </p>
       </div>
 
       {/* Intensity Slider */}
-      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
-            <Sliders className="w-3.5 h-3.5 text-brand-600" />
+      <div className="space-y-2 pt-1 border-t border-[#E8E4DD]/60">
+        <div className="flex items-center justify-between text-xs">
+          <label className="font-medium text-charcoal-700 flex items-center gap-1.5">
+            <Sliders className="w-3.5 h-3.5 text-charcoal-400" />
             <span>Shift Intensity Strength</span>
-          </div>
-          <span className="font-mono text-xs font-bold text-brand-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+          </label>
+          <span className="font-mono text-xs font-semibold text-charcoal-900 px-2 py-0.5 rounded-full bg-[#EDE7DE]">
             {isOriginal ? "N/A" : `${intensity.toFixed(2)}x`}
           </span>
         </div>
 
-        <input
-          type="range"
-          min="0.0"
-          max="2.0"
-          step="0.05"
-          value={intensity}
-          disabled={isOriginal}
-          onChange={(e) => onIntensityChange(parseFloat(e.target.value))}
-          className={`w-full accent-brand-600 cursor-pointer ${
-            isOriginal ? "opacity-40 cursor-not-allowed" : ""
-          }`}
-          aria-label="Stain Shift Intensity Slider"
-        />
-
-        <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-          <span>0.0x (Neutral)</span>
-          <span>1.0x (Benchmark Calibration)</span>
-          <span>2.0x (Severe Shift)</span>
+        <div className="space-y-1">
+          <input
+            type="range"
+            min="0.0"
+            max="2.0"
+            step="0.05"
+            value={intensity}
+            disabled={isOriginal}
+            onChange={(e) => onIntensityChange(parseFloat(e.target.value))}
+            aria-label="Stain Shift Intensity Slider"
+            className={`w-full h-1.5 bg-[#E8E4DD] rounded-lg appearance-none cursor-pointer accent-[#CC785C] ${
+              isOriginal ? "opacity-40 cursor-not-allowed" : ""
+            }`}
+          />
+          <div className="flex justify-between text-[10px] text-charcoal-400 font-mono">
+            <span>0.0x (Neutral)</span>
+            <span>1.0x (Calibrated)</span>
+            <span>2.0x (Severe)</span>
+          </div>
         </div>
 
-        {isOriginal ? (
-          <p className="text-[10px] text-slate-400 italic">
+        {isOriginal && (
+          <p className="text-[10px] text-charcoal-400 italic">
             Intensity disabled for Original condition (exact unperturbed pixels).
-          </p>
-        ) : (
-          <p className="text-[10px] text-slate-500 leading-snug">
-            Scales concentration factors (alpha_H, alpha_E) and angle rotation. Values other than 1.0x represent interactive experimental variants beyond the fixed benchmark.
           </p>
         )}
       </div>

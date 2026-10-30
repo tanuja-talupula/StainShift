@@ -26,11 +26,11 @@ export function ConfusionMatrixViewer({
   const maxVal = matrix.reduce((max, row) => Math.max(max, ...row), 1);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5">
+    <div className="bg-white rounded-2xl border border-[#E8E4DD] p-6 shadow-sm space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-bold text-slate-900">Held-Out Test Confusion Matrix</h3>
-          <p className="text-xs text-slate-500">
+          <h3 className="font-serif text-lg font-medium text-charcoal-900">Held-Out Test Confusion Matrix</h3>
+          <p className="text-xs text-charcoal-500 mt-0.5">
             Row: Actual Ground Truth Tissue Class | Column: Model Predicted Class ($N = 1,077$ patches)
           </p>
         </div>
@@ -38,12 +38,12 @@ export function ConfusionMatrixViewer({
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Model toggle */}
-          <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs">
+          <div className="inline-flex rounded-full border border-[#E8E4DD] p-0.5 bg-[#FAF8F5] text-xs">
             <button
               type="button"
               onClick={() => setSelectedModel("baseline")}
-              className={`px-2.5 py-1 rounded-md font-medium transition ${
-                selectedModel === "baseline" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"
+              className={`px-3 py-1 rounded-full font-medium transition ${
+                selectedModel === "baseline" ? "bg-white text-charcoal-900 shadow-sm" : "text-charcoal-500 hover:text-charcoal-900"
               }`}
             >
               Baseline
@@ -51,8 +51,8 @@ export function ConfusionMatrixViewer({
             <button
               type="button"
               onClick={() => setSelectedModel("robust_stain_aug")}
-              className={`px-2.5 py-1 rounded-md font-medium transition ${
-                selectedModel === "robust_stain_aug" ? "bg-brand-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+              className={`px-3 py-1 rounded-full font-medium transition ${
+                selectedModel === "robust_stain_aug" ? "bg-charcoal-900 text-white shadow-sm" : "text-charcoal-500 hover:text-charcoal-900"
               }`}
             >
               Stain-Robust
@@ -63,87 +63,85 @@ export function ConfusionMatrixViewer({
           <select
             value={selectedCondition}
             onChange={(e) => setSelectedCondition(e.target.value)}
-            className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-brand-500"
+            className="text-xs border border-[#E8E4DD] rounded-xl px-3 py-1.5 bg-white text-charcoal-800 font-medium focus:ring-1 focus:ring-[#CC785C]"
             aria-label="Select stain condition for confusion matrix"
           >
             {conditions.map((cond) => (
               <option key={cond} value={cond}>
-                {cond.replace(/_/g, " ")} {cond === "reconstruction_only" ? "(Control)" : ""}
+                {cond.replace(/_/g, " ")} {cond === "reconstruction_only" ? "(Deconv Control)" : ""}
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Accuracy & F1 metric summary for selection */}
-      <div className="flex items-center gap-4 text-xs bg-slate-50 border border-slate-100 p-3 rounded-lg">
-        <span className="text-slate-600">
-          Condition: <strong className="text-slate-900">{selectedCondition}</strong>
-        </span>
-        <span>•</span>
-        <span className="text-slate-600">
-          Accuracy: <strong className="text-brand-700 font-mono">{activeResult?.accuracy.toFixed(2)}%</strong>
-        </span>
-        <span>•</span>
-        <span className="text-slate-600">
-          Macro F1: <strong className="text-brand-700 font-mono">{activeResult?.macro_f1.toFixed(4)}</strong>
-        </span>
+      {/* Matrix Display Table */}
+      <div className="w-full overflow-x-auto border border-[#E8E4DD] rounded-xl">
+        <table className="w-full border-collapse text-center text-xs font-mono">
+          <thead>
+            <tr className="bg-[#FAF8F5] border-b border-[#E8E4DD] text-charcoal-500">
+              <th className="p-2 border-r border-[#E8E4DD] text-left font-sans text-[11px] font-semibold">
+                Actual \ Pred
+              </th>
+              {classNames.map((cls) => (
+                <th key={cls} className="p-2 font-bold text-charcoal-700 min-w-[36px]">
+                  {cls}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {matrix.map((row, rowIdx) => {
+              const actualClass = classNames[rowIdx];
+              return (
+                <tr key={actualClass} className="border-b border-[#E8E4DD] last:border-b-0">
+                  <td className="p-2 font-bold font-sans text-left bg-[#FAF8F5] border-r border-[#E8E4DD] text-charcoal-800">
+                    {actualClass}
+                  </td>
+                  {row.map((val, colIdx) => {
+                    const isDiagonal = rowIdx === colIdx;
+                    const intensity = val / maxVal;
+
+                    return (
+                      <td
+                        key={colIdx}
+                        className="p-2 font-medium transition"
+                        style={{
+                          backgroundColor:
+                            val === 0
+                              ? "transparent"
+                              : isDiagonal
+                              ? `rgba(204, 120, 92, ${Math.max(intensity * 0.85, 0.15)})`
+                              : `rgba(184, 58, 58, ${Math.max(intensity * 0.7, 0.12)})`,
+                          color: val > maxVal * 0.5 ? "#ffffff" : "#1A1918",
+                        }}
+                        title={`Actual: ${actualClass}, Predicted: ${classNames[colIdx]} (${val} patches)`}
+                      >
+                        {val}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
-      {/* 9x9 Grid */}
-      <div className="overflow-x-auto">
-        <div className="min-w-[480px]">
-          <table className="w-full text-center border-collapse text-xs">
-            <thead>
-              <tr>
-                <th className="p-1 text-[10px] text-slate-400 font-mono">True \ Pred</th>
-                {classNames.map((cl) => (
-                  <th key={cl} className="p-1 font-mono font-semibold text-slate-700 text-[11px]">
-                    {cl}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {matrix.map((row, rIdx) => {
-                const trueClass = classNames[rIdx];
-                return (
-                  <tr key={trueClass}>
-                    <th scope="row" className="p-1 text-right font-mono font-semibold text-slate-700 text-[11px] pr-2">
-                      {trueClass}
-                    </th>
-                    {row.map((val, cIdx) => {
-                      const isDiagonal = rIdx === cIdx;
-                      const intensity = val > 0 ? Math.min(val / maxVal, 1) : 0;
-                      // Color styling
-                      let bgStyle = "rgba(241, 245, 249, 0.4)";
-                      let textStyle = "text-slate-400";
-                      if (val > 0) {
-                        if (isDiagonal) {
-                          bgStyle = `rgba(2, 132, 199, ${Math.max(intensity, 0.15)})`;
-                          textStyle = intensity > 0.5 ? "text-white font-bold" : "text-brand-900 font-semibold";
-                        } else {
-                          bgStyle = `rgba(239, 68, 68, ${Math.max(intensity, 0.15)})`;
-                          textStyle = intensity > 0.5 ? "text-white font-bold" : "text-red-900 font-semibold";
-                        }
-                      }
-                      return (
-                        <td
-                          key={cIdx}
-                          style={{ backgroundColor: bgStyle }}
-                          className={`p-1.5 border border-white text-[11px] font-mono transition ${textStyle}`}
-                          title={`True: ${trueClass}, Predicted: ${classNames[cIdx]} (${val} samples)`}
-                        >
-                          {val}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-charcoal-500 pt-1">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded bg-[#CC785C]" />
+            <span>Correct Classifications (Diagonal)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded bg-[#D47363]" />
+            <span>Misclassifications (Off-Diagonal)</span>
+          </div>
         </div>
+        <span className="font-mono text-[11px] text-charcoal-400">
+          Accuracy: {activeResult ? (activeResult.accuracy * 100).toFixed(2) : "0.00"}% | Macro F1: {activeResult?.macro_f1.toFixed(4)}
+        </span>
       </div>
     </div>
   );

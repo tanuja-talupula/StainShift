@@ -1,21 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 15, 23, 42;
-  --background-rgb: 248, 250, 252;
+  --bg-color: #FAF8F5;
+  --text-color: #1A1918;
+  --text-muted: #6B665E;
+  --border-color: #E8E4DD;
+  --terracotta: #CC785C;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Accessible focus ring */
+/* Serif headings styling */
+h1, h2, h3, .font-serif-heading {
+  font-family: 'Newsreader', Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
+  font-feature-settings: "liga" 1, "dlig" 1;
+}
+
+/* Subtle, warm focus ring */
 *:focus-visible {
-  outline: 2px solid #0284c7;
+  outline: 2px solid #CC785C;
   outline-offset: 2px;
+}
+
+/* Custom warm scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DDD8CF;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C8C2B7;
 }

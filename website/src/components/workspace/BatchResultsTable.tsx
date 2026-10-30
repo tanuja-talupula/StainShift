@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Download, FileText, CheckCircle2, AlertCircle, Clock, Trash2, ArrowUpDown } from "lucide-react";
+import { Download, CheckCircle2, AlertCircle, Clock, Trash2 } from "lucide-react";
 import { BatchSummary, ImageInferenceResult } from "@/lib/types";
 
 interface Props {
@@ -40,7 +40,7 @@ export function BatchResultsTable({
       "probabilities_json",
       "inference_time_ms",
       "status",
-      "error_message"
+      "error_message",
     ];
 
     const escapeCsv = (val: any) => {
@@ -50,8 +50,10 @@ export function BatchResultsTable({
     };
 
     const rows = results.map((r) => {
-      // Pick the main prediction
-      const primaryPred = r.predictions.robust_stain_aug || r.predictions.baseline || Object.values(r.predictions)[0];
+      const primaryPred =
+        r.predictions.robust_stain_aug ||
+        r.predictions.baseline ||
+        Object.values(r.predictions)[0];
       return [
         escapeCsv(r.filename),
         escapeCsv(r.file_size_bytes),
@@ -59,11 +61,11 @@ export function BatchResultsTable({
         escapeCsv(r.condition_applied),
         escapeCsv(r.intensity_applied),
         escapeCsv(primaryPred?.predicted_class || "N/A"),
-        escapeCsv(primaryPred?.confidence !== undefined ? primaryPred.confidence.toFixed(4) : "N/A"),
-        escapeCsv(primaryPred?.probabilities ? JSON.stringify(primaryPred.probabilities) : "{}"),
-        escapeCsv(primaryPred?.inference_time_ms !== undefined ? primaryPred.inference_time_ms.toFixed(3) : "N/A"),
+        escapeCsv(primaryPred?.confidence ? (primaryPred.confidence * 100).toFixed(2) + "%" : "N/A"),
+        escapeCsv(JSON.stringify(primaryPred?.probabilities || {})),
+        escapeCsv(primaryPred?.inference_time_ms?.toFixed(2) || "N/A"),
         escapeCsv(r.status),
-        escapeCsv(r.error_message || "")
+        escapeCsv(r.error_message || ""),
       ].join(",");
     });
 
@@ -71,21 +73,21 @@ export function BatchResultsTable({
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `stainshift_predictions_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = `stainshift_batch_inference_${Date.now()}.csv`;
     link.click();
-    document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-      {/* Batch Summary Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+    <div className="bg-white rounded-2xl border border-[#E8E4DD] shadow-sm p-6 space-y-6">
+      {/* Top Header & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E4DD] pb-4">
         <div>
-          <h3 className="text-base font-bold text-slate-900">Batch Inference Results</h3>
-          <p className="text-xs text-slate-500">
+          <h3 className="font-serif text-xl font-medium text-charcoal-900">
+            Batch Inference Results
+          </h3>
+          <p className="text-xs text-charcoal-500 mt-0.5">
             {results.length} image{results.length !== 1 ? "s" : ""} evaluated with actual trained weights.
           </p>
         </div>
@@ -94,141 +96,139 @@ export function BatchResultsTable({
           <button
             type="button"
             onClick={handleDownloadCsv}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-white text-xs font-medium shadow-sm transition"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5 text-white" />
             <span>Download CSV</span>
           </button>
           <button
             type="button"
             onClick={onClearResults}
-            className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-red-600 transition"
-            title="Clear Results"
-            aria-label="Clear all results"
+            className="p-1.5 rounded-full text-charcoal-400 hover:text-charcoal-700 hover:bg-[#F3EFEA] transition"
+            title="Clear all results"
           >
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Summary KPIs */}
+      {/* KPI Summary Cards */}
       {summary && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Total Files</span>
-            <span className="text-lg font-extrabold font-mono text-slate-900">{summary.total_files}</span>
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E4DD] space-y-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-charcoal-400">Total Files</span>
+            <div className="text-xl font-serif font-bold text-charcoal-900">{summary.total_files}</div>
           </div>
-          <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-200/80">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 block">Successful</span>
-            <span className="text-lg font-extrabold font-mono text-emerald-800">{summary.successful_files}</span>
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E4DD] space-y-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#2D5A46]">Successful</span>
+            <div className="text-xl font-serif font-bold text-[#2D5A46]">{summary.successful_files}</div>
           </div>
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Avg Forward Latency</span>
-            <span className="text-lg font-extrabold font-mono text-slate-900">{summary.average_inference_time_ms} ms</span>
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E4DD] space-y-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-charcoal-400">Avg Forward Latency</span>
+            <div className="text-xl font-serif font-bold font-mono text-charcoal-900">
+              {summary.average_inference_time_ms ? `${summary.average_inference_time_ms.toFixed(1)} ms` : "N/A"}
+            </div>
           </div>
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Class Distribution</span>
-            <span className="text-xs font-mono text-slate-700 block truncate">
-              {Object.entries(summary.class_distribution).map(([c, n]) => `${c}:${n}`).join(", ") || "None"}
-            </span>
+          <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E4DD] space-y-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-charcoal-400">Class Distribution</span>
+            <div className="text-xs font-mono text-charcoal-700 truncate">
+              {Object.entries(summary.class_distribution || {})
+                .map(([cls, cnt]) => `${cls}:${cnt}`)
+                .join(" ") || "None"}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Filter and Table */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <input
-            type="text"
-            placeholder="Search filename..."
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-          <span className="text-xs text-slate-400">
-            Showing {filteredResults.length} of {results.length}
-          </span>
-        </div>
+      {/* Filter and Search Bar */}
+      <div className="flex items-center justify-between gap-4">
+        <input
+          type="text"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          placeholder="Search filename..."
+          className="w-full max-w-xs px-3.5 py-1.5 rounded-xl border border-[#E8E4DD] bg-white text-xs text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-1 focus:ring-[#CC785C]"
+        />
+        <span className="text-xs text-charcoal-400 font-mono">
+          Showing {filteredResults.length} of {results.length}
+        </span>
+      </div>
 
-        <div className="overflow-x-auto rounded-xl border border-slate-200">
-          <table className="w-full text-xs text-left text-slate-700">
-            <thead className="bg-slate-50 text-slate-900 font-semibold border-b border-slate-200">
-              <tr>
-                <th scope="col" className="py-2.5 px-3">Thumbnail</th>
-                <th scope="col" className="py-2.5 px-3">Filename</th>
-                <th scope="col" className="py-2.5 px-3">Condition</th>
-                <th scope="col" className="py-2.5 px-3">Predicted Class</th>
-                <th scope="col" className="py-2.5 px-3 text-right">Confidence</th>
-                <th scope="col" className="py-2.5 px-3 text-right">Latency</th>
-                <th scope="col" className="py-2.5 px-3 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredResults.map((item) => {
-                const isSelected = selectedFilename === item.filename;
-                const primaryPred = item.predictions.robust_stain_aug || item.predictions.baseline || Object.values(item.predictions)[0];
-                return (
-                  <tr
-                    key={item.filename}
-                    onClick={() => onSelectResult(item)}
-                    className={`cursor-pointer transition hover:bg-slate-50 ${
-                      isSelected ? "bg-brand-50/60 font-medium" : ""
-                    }`}
-                  >
-                    <td className="py-2 px-3">
-                      <div className="w-8 h-8 rounded bg-slate-100 overflow-hidden border border-slate-200">
-                        {item.original_thumbnail_b64 ? (
-                          <img
-                            src={item.original_thumbnail_b64}
-                            alt={item.filename}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <FileText className="w-4 h-4 text-slate-400 m-2" />
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-2 px-3 font-mono font-medium text-slate-900 truncate max-w-[180px]">
-                      {item.filename}
-                    </td>
-                    <td className="py-2 px-3 capitalize text-slate-600">
-                      {item.condition_applied.replace(/_/g, " ")} ({item.intensity_applied.toFixed(2)}x)
-                    </td>
-                    <td className="py-2 px-3">
-                      {primaryPred ? (
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-slate-900">{primaryPred.predicted_class}</span>
-                          <span className="text-[11px] text-slate-500 truncate max-w-[120px]">
-                            {primaryPred.predicted_class_description}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-3 text-right font-mono font-semibold text-brand-700">
-                      {primaryPred ? `${(primaryPred.confidence * 100).toFixed(1)}%` : "—"}
-                    </td>
-                    <td className="py-2 px-3 text-right font-mono text-slate-500">
-                      {primaryPred ? `${primaryPred.inference_time_ms.toFixed(1)} ms` : "—"}
-                    </td>
-                    <td className="py-2 px-3 text-center">
-                      {item.status === "success" ? (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          Success
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200" title={item.error_message || "Error"}>
-                          Failed
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      {/* Table Container */}
+      <div className="overflow-x-auto border border-[#E8E4DD] rounded-xl">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-[#FAF8F5] border-b border-[#E8E4DD] text-charcoal-500 font-medium">
+            <tr>
+              <th className="py-2.5 px-3">Status</th>
+              <th className="py-2.5 px-3">Filename</th>
+              <th className="py-2.5 px-3">Condition</th>
+              <th className="py-2.5 px-3">Predicted Class</th>
+              <th className="py-2.5 px-3">Confidence</th>
+              <th className="py-2.5 px-3">Latency</th>
+              <th className="py-2.5 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#E8E4DD] font-mono text-[11px]">
+            {filteredResults.map((row) => {
+              const primaryPred =
+                row.predictions.robust_stain_aug ||
+                row.predictions.baseline ||
+                Object.values(row.predictions)[0];
+              const isSelected = row.filename === selectedFilename;
+
+              return (
+                <tr
+                  key={row.filename}
+                  className={`hover:bg-[#FAF8F5] cursor-pointer transition ${
+                    isSelected ? "bg-[#F5F1EB] font-medium" : ""
+                  }`}
+                  onClick={() => onSelectResult(row)}
+                >
+                  <td className="py-2 px-3">
+                    {row.status === "success" ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#2D5A46]" />
+                    ) : (
+                      <AlertCircle className="w-3.5 h-3.5 text-[#B83A3A]" />
+                    )}
+                  </td>
+                  <td className="py-2 px-3 text-charcoal-900 font-sans font-medium truncate max-w-xs">
+                    {row.filename}
+                  </td>
+                  <td className="py-2 px-3 text-charcoal-500 font-sans capitalize">
+                    {row.condition_applied} ({row.intensity_applied.toFixed(1)}x)
+                  </td>
+                  <td className="py-2 px-3">
+                    {primaryPred ? (
+                      <span className="px-2 py-0.5 rounded-full bg-[#EDE7DE] text-charcoal-900 font-bold">
+                        {primaryPred.predicted_class}
+                      </span>
+                    ) : (
+                      <span className="text-charcoal-400">N/A</span>
+                    )}
+                  </td>
+                  <td className="py-2 px-3 text-charcoal-700">
+                    {primaryPred ? `${(primaryPred.confidence * 100).toFixed(1)}%` : "N/A"}
+                  </td>
+                  <td className="py-2 px-3 text-charcoal-500">
+                    {primaryPred?.inference_time_ms ? `${primaryPred.inference_time_ms.toFixed(1)} ms` : "N/A"}
+                  </td>
+                  <td className="py-2 px-3 text-right">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectResult(row);
+                      }}
+                      className="px-2.5 py-1 rounded-full text-[10px] bg-white border border-[#E8E4DD] text-charcoal-700 hover:bg-[#F3EFEA] transition shadow-2xs font-sans"
+                    >
+                      Inspect
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

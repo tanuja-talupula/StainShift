@@ -7,12 +7,9 @@ import {
   RefreshCw,
   Sparkles,
   BarChart2,
-  BookOpen,
   Eye,
-  Terminal,
-  AlertOctagon,
   ArrowRight,
-  ShieldCheck,
+  Database,
 } from "lucide-react";
 import { BackendStatusIndicator } from "@/components/workspace/BackendStatusIndicator";
 import { ModelSelector } from "@/components/workspace/ModelSelector";
@@ -149,7 +146,7 @@ export default function WorkspacePage() {
     } catch (err: any) {
       const msg = err.message || "Failed to communicate with inference service.";
       setErrorMessage(
-        `${msg}. Verify that the FastAPI backend is running at ${apiUrl} and loaded checkpoints.`
+        `${msg}. Verify that the backend is healthy at ${apiUrl}.`
       );
       setQueue((prev) => prev.map((item) => ({ ...item, status: "failed" })));
     } finally {
@@ -159,27 +156,27 @@ export default function WorkspacePage() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Workspace Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
-        <div>
+    <div className="space-y-10">
+      {/* Workspace Editorial Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#E8E4DD] pb-8">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#EDE7DE] text-charcoal-700 text-xs font-medium">
+              <Sparkles className="w-3.5 h-3.5 text-[#CC785C]" />
               <span>Interactive AI Workspace</span>
             </span>
-            <span className="text-xs text-slate-400 font-mono">MobileNetV3-Small (PyTorch)</span>
+            <span className="text-xs text-charcoal-400 font-mono">MobileNetV3-Small (PyTorch)</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-charcoal-900 tracking-tight leading-tight">
             Histopathology Stain-Shift Inference
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1 leading-relaxed">
+          <p className="text-sm sm:text-base text-charcoal-600 max-w-2xl leading-relaxed">
             Upload colorectal adenocarcinoma patches, apply physics-informed Beer-Lambert stain variations,
             and inspect real model predictions with full 9-class softmax distributions.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <BackendStatusIndicator
             apiUrl={apiUrl}
             onApiUrlChange={setApiUrl}
@@ -191,7 +188,7 @@ export default function WorkspacePage() {
       {/* Main Two-Column Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Control Panel (5 Cols) */}
-        <div className="lg:col-span-5 space-y-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="lg:col-span-5 space-y-6 bg-white p-6 rounded-2xl border border-[#E8E4DD] shadow-sm">
           {/* 1. Model Selector */}
           <ModelSelector
             selectedModel={selectedModel}
@@ -217,7 +214,7 @@ export default function WorkspacePage() {
 
           {/* Error Notice */}
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 space-y-1">
+            <div className="p-3.5 bg-[#FBEFEF] border border-[#F2D6D6] rounded-xl text-xs text-[#9B2A2A] space-y-1">
               <p className="font-semibold">Inference Request Failed</p>
               <p className="text-[11px] leading-relaxed font-mono">{errorMessage}</p>
             </div>
@@ -229,20 +226,20 @@ export default function WorkspacePage() {
               type="button"
               onClick={handleRunPrediction}
               disabled={isRunning || queue.length === 0}
-              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white shadow-sm transition flex items-center justify-center gap-2 ${
+              className={`w-full py-3.5 px-4 rounded-xl font-medium text-sm text-white shadow-sm transition flex items-center justify-center gap-2 ${
                 isRunning || queue.length === 0
-                  ? "bg-slate-300 cursor-not-allowed"
-                  : "bg-brand-600 hover:bg-brand-700 active:scale-[0.99]"
+                  ? "bg-[#DDD8CF] text-charcoal-400 cursor-not-allowed shadow-none"
+                  : "bg-charcoal-900 hover:bg-charcoal-800 active:scale-[0.99]"
               }`}
             >
               {isRunning ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-white" />
                   <span>{progressText || "Computing Predictions..."}</span>
                 </>
               ) : (
                 <>
-                  <Play className="w-4 h-4 fill-white" />
+                  <Play className="w-4 h-4 fill-white text-white" />
                   <span>
                     Run Prediction {queue.length > 0 ? `(${queue.length} file${queue.length !== 1 ? "s" : ""})` : ""}
                   </span>
@@ -250,7 +247,7 @@ export default function WorkspacePage() {
               )}
             </button>
 
-            <p className="text-[10px] text-slate-400 text-center">
+            <p className="text-[10px] text-charcoal-400 text-center">
               Direct PyTorch forward pass on active device. Zero synthetic logits or browser simulations.
             </p>
           </div>
@@ -277,84 +274,56 @@ export default function WorkspacePage() {
       )}
 
       {/* Secondary Navigation & Research Resources */}
-      <div className="border-t border-slate-200/80 pt-8 mt-12 space-y-4">
+      <div className="border-t border-[#E8E4DD] pt-10 mt-16 space-y-6">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Research Documentation & Empirical Benchmark
+          <span className="text-xs font-semibold uppercase tracking-wider text-charcoal-500">
+            Empirical Benchmark & Exploration
           </span>
-          <span className="text-xs text-slate-400 font-mono">CRC-VAL-HE-7K Single-Cohort Study</span>
+          <span className="text-xs text-charcoal-400 font-mono">CRC-VAL-HE-7K Single-Cohort Study</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link
             href="/dashboard/"
-            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-brand-500 hover:shadow-sm transition group flex flex-col justify-between"
+            className="p-6 rounded-2xl bg-white border border-[#E8E4DD] hover:border-[#CC785C] hover:shadow-warm transition group flex flex-col justify-between"
           >
             <div>
-              <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-2 group-hover:bg-brand-600 group-hover:text-white transition">
+              <div className="w-9 h-9 rounded-full bg-[#FAF4ED] text-[#CC785C] flex items-center justify-center mb-3 group-hover:bg-[#CC785C] group-hover:text-white transition">
                 <BarChart2 className="w-4 h-4" />
               </div>
-              <h4 className="text-sm font-bold text-slate-900">Results Dashboard</h4>
-              <p className="text-xs text-slate-500 mt-1">
-                Full 1,077-patch held-out evaluation across all 8 conditions.
+              <h3 className="font-serif text-lg font-medium text-charcoal-900">
+                Results Dashboard
+              </h3>
+              <p className="text-xs text-charcoal-500 mt-1 leading-relaxed">
+                Full 1,077-patch held-out evaluation across all 8 stain conditions.
+                Inspect accuracy recovery from 33.89% to 97.68% and hardware execution benchmarks.
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 mt-3">
-              View charts <ArrowRight className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#CC785C] mt-4">
+              <span>View benchmark charts</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition" />
             </span>
           </Link>
 
           <Link
             href="/demo/"
-            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-brand-500 hover:shadow-sm transition group flex flex-col justify-between"
+            className="p-6 rounded-2xl bg-white border border-[#E8E4DD] hover:border-[#CC785C] hover:shadow-warm transition group flex flex-col justify-between"
           >
             <div>
-              <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-2 group-hover:bg-brand-600 group-hover:text-white transition">
+              <div className="w-9 h-9 rounded-full bg-[#FAF4ED] text-[#CC785C] flex items-center justify-center mb-3 group-hover:bg-[#CC785C] group-hover:text-white transition">
                 <Eye className="w-4 h-4" />
               </div>
-              <h4 className="text-sm font-bold text-slate-900">Precomputed Demo</h4>
-              <p className="text-xs text-slate-500 mt-1">
-                Verified 72-patch explorer with zero backend requirements.
+              <h3 className="font-serif text-lg font-medium text-charcoal-900">
+                Verified Precomputed Demo
+              </h3>
+              <p className="text-xs text-charcoal-500 mt-1 leading-relaxed">
+                Deterministic 72-patch explorer with verified predictions generated directly from Stage A weights.
+                Requires zero active backend connection.
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 mt-3">
-              Explore patches <ArrowRight className="w-3.5 h-3.5" />
-            </span>
-          </Link>
-
-          <Link
-            href="/methodology/"
-            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-brand-500 hover:shadow-sm transition group flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-2 group-hover:bg-brand-600 group-hover:text-white transition">
-                <BookOpen className="w-4 h-4" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">Methodology</h4>
-              <p className="text-xs text-slate-500 mt-1">
-                Beer-Lambert optical density math and SVD stain matrix decomposition.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 mt-3">
-              Read physics <ArrowRight className="w-3.5 h-3.5" />
-            </span>
-          </Link>
-
-          <Link
-            href="/limitations/"
-            className="p-4 rounded-xl bg-white border border-slate-200 hover:border-brand-500 hover:shadow-sm transition group flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-2 group-hover:bg-brand-600 group-hover:text-white transition">
-                <AlertOctagon className="w-4 h-4" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">Limitations & Safety</h4>
-              <p className="text-xs text-slate-500 mt-1">
-                Failure modes, boundary conditions, and prototype disclaimers.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 mt-3">
-              Review safety <ArrowRight className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#CC785C] mt-4">
+              <span>Explore sample patches</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition" />
             </span>
           </Link>
         </div>

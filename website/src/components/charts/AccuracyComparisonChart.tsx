@@ -6,28 +6,27 @@ interface Props {
 }
 
 export function AccuracyComparisonChart({ data }: Props) {
-  // Chart dimensions
   const chartHeight = 300;
   const barWidth = 18;
   const groupSpacing = 42;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+    <div className="bg-white rounded-2xl border border-[#E8E4DD] p-6 shadow-sm space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-base font-bold text-slate-900">Accuracy Across Stain Profiles</h3>
-          <p className="text-xs text-slate-500">
+          <h3 className="font-serif text-lg font-medium text-charcoal-900">Accuracy Across Stain Profiles</h3>
+          <p className="text-xs text-charcoal-500 mt-0.5">
             Frozen held-out test cohort ($N = 1,077$ patches). Baseline model collapses under deconvolution and shift; Robust model maintains accuracy.
           </p>
         </div>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-slate-400 inline-block" />
-            <span className="text-slate-600 font-medium">Standard Baseline</span>
+            <span className="w-3 h-3 rounded-full bg-[#A8A196] inline-block" />
+            <span className="text-charcoal-600 font-medium">Standard Baseline</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-brand-600 inline-block" />
-            <span className="text-slate-900 font-semibold">Stain-Robust Model</span>
+            <span className="w-3 h-3 rounded-full bg-[#CC785C] inline-block" />
+            <span className="text-charcoal-900 font-semibold">Stain-Robust</span>
           </div>
         </div>
       </div>
@@ -46,8 +45,8 @@ export function AccuracyComparisonChart({ data }: Props) {
               const y = chartHeight - (tick / 100) * chartHeight + 20;
               return (
                 <g key={tick}>
-                  <line x1="45" y1={y} x2={data.length * (barWidth * 2 + groupSpacing) + 50} y2={y} stroke="#e2e8f0" strokeDasharray="3 3" />
-                  <text x="35" y={y + 4} textAnchor="end" fontSize="10" fill="#64748b" className="font-mono">
+                  <line x1="45" y1={y} x2={data.length * (barWidth * 2 + groupSpacing) + 50} y2={y} stroke="#EDE7DE" strokeDasharray="3 3" />
+                  <text x="35" y={y + 4} textAnchor="end" fontSize="10" fill="#8C857B" className="font-mono">
                     {tick}%
                   </text>
                 </g>
@@ -61,69 +60,60 @@ export function AccuracyComparisonChart({ data }: Props) {
               const rHeight = (row.robust_accuracy_pct / 100) * chartHeight;
               const bY = chartHeight - bHeight + 20;
               const rY = chartHeight - rHeight + 20;
-              const isReconstruction = row.condition === "reconstruction_only";
 
               return (
-                <g key={row.condition} className="group">
-                  {/* Highlight box for reconstruction control */}
-                  {isReconstruction && (
-                    <rect
-                      x={groupX - 6}
-                      y="15"
-                      width={barWidth * 2 + 12}
-                      height={chartHeight + 10}
-                      fill="#fef2f2"
-                      rx="4"
-                      className="opacity-75"
-                    />
-                  )}
-
+                <g key={row.condition}>
                   {/* Baseline bar */}
                   <rect
                     x={groupX}
                     y={bY}
                     width={barWidth}
                     height={bHeight}
-                    fill={isReconstruction ? "#ef4444" : "#94a3b8"}
-                    rx="2"
-                    className="transition hover:opacity-80"
+                    fill="#A8A196"
+                    rx="3"
                   />
-                  <text x={groupX + barWidth / 2} y={bY - 4} textAnchor="middle" fontSize="9" fill="#475569" className="font-mono font-medium">
+                  <text
+                    x={groupX + barWidth / 2}
+                    y={bY - 6}
+                    textAnchor="middle"
+                    fontSize="9.5"
+                    fill="#5A554D"
+                    className="font-mono font-medium"
+                  >
                     {row.baseline_accuracy_pct.toFixed(1)}%
                   </text>
 
                   {/* Robust bar */}
                   <rect
-                    x={groupX + barWidth + 2}
+                    x={groupX + barWidth + 4}
                     y={rY}
                     width={barWidth}
                     height={rHeight}
-                    fill="#0284c7"
-                    rx="2"
-                    className="transition hover:opacity-80"
+                    fill="#CC785C"
+                    rx="3"
                   />
-                  <text x={groupX + barWidth + 2 + barWidth / 2} y={rY - 4} textAnchor="middle" fontSize="9" fill="#0369a1" className="font-mono font-bold">
+                  <text
+                    x={groupX + barWidth + 4 + barWidth / 2}
+                    y={rY - 6}
+                    textAnchor="middle"
+                    fontSize="9.5"
+                    fill="#9B4E37"
+                    className="font-mono font-bold"
+                  >
                     {row.robust_accuracy_pct.toFixed(1)}%
                   </text>
 
-                  {/* X axis condition label */}
+                  {/* X-axis Label */}
                   <text
-                    x={groupX + barWidth}
-                    y={chartHeight + 36}
+                    x={groupX + barWidth + 2}
+                    y={chartHeight + 40}
                     textAnchor="middle"
                     fontSize="10"
-                    fill="#334155"
-                    className="font-medium"
+                    fill="#3D3A37"
+                    className="font-sans font-medium"
                   >
                     {row.condition.replace(/_/g, " ")}
                   </text>
-
-                  {/* Reconstruction callout flag */}
-                  {isReconstruction && (
-                    <text x={groupX + barWidth} y={chartHeight + 50} textAnchor="middle" fontSize="8.5" fill="#dc2626" className="font-bold">
-                      Control (-66.0%)
-                    </text>
-                  )}
                 </g>
               );
             })}
@@ -131,39 +121,45 @@ export function AccuracyComparisonChart({ data }: Props) {
         </div>
       </div>
 
-      {/* Accessible HTML Table Fallback */}
-      <div className="border-t border-slate-100 pt-4">
-        <details className="group">
-          <summary className="text-xs text-slate-500 hover:text-slate-800 cursor-pointer font-medium select-none">
-            View Accessible Data Table
-          </summary>
-          <div className="overflow-x-auto mt-3">
-            <table className="w-full text-xs text-left text-slate-700">
-              <thead className="bg-slate-50 text-slate-900 font-semibold border-b border-slate-200">
-                <tr>
-                  <th scope="col" className="py-2 px-3">Stain Condition</th>
-                  <th scope="col" className="py-2 px-3">Condition Description</th>
-                  <th scope="col" className="py-2 px-3 text-right">Baseline Accuracy</th>
-                  <th scope="col" className="py-2 px-3 text-right">Robust Accuracy</th>
-                  <th scope="col" className="py-2 px-3 text-right">Net Recovery</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.map((row) => (
-                  <tr key={row.condition} className="hover:bg-slate-50/50">
-                    <td className="py-2 px-3 font-mono font-medium">{row.condition}</td>
-                    <td className="py-2 px-3 text-slate-500">{row.description}</td>
-                    <td className="py-2 px-3 text-right font-mono">{row.baseline_accuracy_pct.toFixed(2)}%</td>
-                    <td className="py-2 px-3 text-right font-mono font-semibold text-brand-700">{row.robust_accuracy_pct.toFixed(2)}%</td>
-                    <td className="py-2 px-3 text-right font-mono text-emerald-600 font-medium">
-                      {row.net_recovery_pct > 0 ? `+${row.net_recovery_pct.toFixed(2)}%` : `${row.net_recovery_pct.toFixed(2)}%`}
+      {/* Accessible Table Alternative */}
+      <div className="pt-4 border-t border-[#E8E4DD]">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-charcoal-700">
+            Tabular Comparison
+          </span>
+          <span className="text-xs text-charcoal-400 font-mono">Held-Out Test N=1,077</span>
+        </div>
+        <div className="overflow-x-auto border border-[#E8E4DD] rounded-xl">
+          <table className="w-full text-left text-xs text-charcoal-700">
+            <thead className="bg-[#FAF8F5] border-b border-[#E8E4DD] text-charcoal-500 font-medium">
+              <tr>
+                <th scope="col" className="py-2.5 px-3">Condition</th>
+                <th scope="col" className="py-2.5 px-3 text-right">Baseline Accuracy</th>
+                <th scope="col" className="py-2.5 px-3 text-right">Robust Accuracy</th>
+                <th scope="col" className="py-2.5 px-3 text-right">Accuracy Delta</th>
+                <th scope="col" className="py-2.5 px-3 text-right">Net Recovery</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E8E4DD] font-mono text-[11px]">
+              {data.map((row) => {
+                const delta = row.robust_accuracy_pct - row.baseline_accuracy_pct;
+                return (
+                  <tr key={row.condition} className="hover:bg-[#FAF8F5] transition">
+                    <td className="py-2 px-3 font-sans font-medium text-charcoal-900">{row.condition.replace(/_/g, " ")}</td>
+                    <td className="py-2 px-3 text-right text-charcoal-600">{row.baseline_accuracy_pct.toFixed(2)}%</td>
+                    <td className="py-2 px-3 text-right font-bold text-[#CC785C]">{row.robust_accuracy_pct.toFixed(2)}%</td>
+                    <td className="py-2 px-3 text-right text-charcoal-500">
+                      {delta > 0 ? `+${delta.toFixed(2)}%` : `${delta.toFixed(2)}%`}
+                    </td>
+                    <td className="py-2 px-3 text-right font-bold text-[#2D5A46]">
+                      {row.net_recovery_pct > 0 ? `+${row.net_recovery_pct.toFixed(2)}%` : "0.00%"}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </details>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
