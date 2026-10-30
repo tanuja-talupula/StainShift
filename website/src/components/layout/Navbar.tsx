@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Sparkles, BarChart3, Eye, Menu, X, Microscope, ExternalLink } from "lucide-react";
 
 const NAV_ITEMS = [
-  { name: "AI Workspace", href: "/", icon: Sparkles },
   { name: "Results Dashboard", href: "/dashboard/", icon: BarChart3 },
   { name: "Demo Explorer", href: "/demo/", icon: Eye },
 ];
@@ -14,6 +13,9 @@ const NAV_ITEMS = [
 export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isWorkspace =
+    pathname === "/workspace" || pathname === "/workspace/";
 
   return (
     <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E8E4DD]">
@@ -56,8 +58,8 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Right Action: Clean GitHub Link */}
-          <div className="hidden sm:flex items-center gap-3">
+          {/* Right: Persistent "Try AI Workspace" CTA + GitHub */}
+          <div className="hidden sm:flex items-center gap-2">
             <a
               href="https://github.com/tanuja-talupula/StainShift"
               target="_blank"
@@ -67,6 +69,17 @@ export function Navbar() {
               <span>GitHub</span>
               <ExternalLink className="w-3 h-3 text-charcoal-400" />
             </a>
+
+            {/* Only show if NOT already on workspace */}
+            {!isWorkspace && (
+              <Link
+                href="/workspace/"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-charcoal-900 hover:bg-charcoal-800 text-white transition shadow-warm"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Try AI Workspace
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu toggle */}
@@ -87,6 +100,18 @@ export function Navbar() {
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="md:hidden border-b border-[#E8E4DD] bg-[#FAF8F5] px-4 pt-2 pb-4 space-y-1">
+          {/* Workspace CTA at top of mobile menu */}
+          {!isWorkspace && (
+            <Link
+              href="/workspace/"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold bg-charcoal-900 text-white mb-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Try AI Workspace
+            </Link>
+          )}
+
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;

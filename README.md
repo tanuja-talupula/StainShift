@@ -11,9 +11,10 @@
 StainShift is a full-stack, user-facing biomedical AI application that accepts uploaded histopathology image patches, simulates physical Hematoxylin and Eosin (H&E) stain variations in Beer-Lambert optical density space, and executes real model inference using pre-trained PyTorch neural networks.
 
 ### Core Capabilities
-1. **Interactive AI Workspace**: Drag-and-drop support for single patches, multiple image files, and whole dataset ZIP archives (`.png`, `.jpg`, `.jpeg`, `.tif`, `.tiff`, `.zip`).
-2. **Real Model Inference**: Powered directly by verified PyTorch checkpoints (`MobileNetV3-Small`) trained on the CRC-VAL-HE-7K benchmark.
-3. **Dual Model Modes**:
+1. **Scrollytelling Landing Page** (`/`): 4-screen story-driven entry — hero headline, animated KPI cards (count-up/count-down), animated horizontal bar chart across all 8 stain profiles, interactive confusion matrix, and a full-width launch banner. Judges see the full narrative before touching the tool.
+2. **Interactive AI Workspace** (`/workspace/`): Drag-and-drop support for single patches, multiple image files, and whole dataset ZIP archives (`.png`, `.jpg`, `.jpeg`, `.tif`, `.tiff`, `.zip`).
+3. **Real Model Inference**: Powered directly by verified PyTorch checkpoints (`MobileNetV3-Small`) trained on the CRC-VAL-HE-7K benchmark.
+4. **Dual Model Modes**:
    - **Baseline Model**: Trained with standard empirical risk minimization and geometric augmentations (collapses under stain shift).
    - **Stain-Robust Model**: Trained with physics-based Macenko Beer-Lambert dye perturbation augmentation (maintains high accuracy across shifts).
    - **Side-by-Side Comparison**: Concurrently runs both models on the identical shifted image and automatically detects prediction flips.
@@ -73,12 +74,12 @@ stainshift/
 ├── website/                            # Next.js 14 Frontend Application
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── page.tsx                # Interactive AI Workspace (Primary Landing)
+│   │   │   ├── page.tsx                # Scrollytelling Landing Page (4-screen Story → Workspace flow)
+│   │   │   ├── workspace/page.tsx      # Interactive AI Workspace (Upload → Predict)
 │   │   │   ├── dashboard/page.tsx      # Verified Stage B Benchmark Dashboard
-│   │   │   ├── demo/page.tsx           # Precomputed 72-Patch Option B Explorer
-│   │   │   ├── methodology/page.tsx    # Optical density physics & SVD math
-│   │   │   ├── limitations/page.tsx    # Scientific caveats & single-cohort bounds
-│   │   │   └── reproduction/page.tsx   # Environment configs & CLI commands
+│   │   │   └── demo/page.tsx           # Precomputed 72-Patch Option B Explorer
+│   │   ├── components/landing/         # ScrollReveal, CountUp, AnimatedBarChart animations
+│   │   ├── components/dashboard/       # TechnicalSpecsDrawer (SHA-256 / Git / MLflow)
 │   │   ├── components/workspace/       # Uploader, ModelSelector, StainControls, Tables
 │   │   ├── components/charts/          # Accessible SVG charts with HTML table alternatives
 │   │   └── lib/types.ts                # TypeScript data interfaces
@@ -126,7 +127,13 @@ cd website
 npm install
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser. The backend indicator will illuminate green: **AI Models Ready (MPS/CPU)**.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+- **`/`** — Scrollytelling landing page (story → workspace flow)
+- **`/workspace/`** — AI Workspace (upload patches, run live inference)
+- **`/dashboard/`** — Verified benchmark results
+- **`/demo/`** — Precomputed 72-patch explorer
+
+The backend indicator on `/workspace/` will illuminate green: **AI Models Ready (MPS/CPU)**.
 
 ---
 

@@ -1,6 +1,17 @@
 import React from "react";
 import { ComparisonRow } from "@/lib/types";
 
+const CONDITION_ABBREV: Record<string, string> = {
+  original: "Original",
+  reconstruction_only: "Deconv.",
+  heavy_hematoxylin: "Hvy. Hema.",
+  heavy_eosin: "Hvy. Eosin",
+  pale_understained: "Pale Under.",
+  dark_overstained: "Dark Over.",
+  synthetic_warm_shift: "Synth. Warm",
+  synthetic_cool_shift: "Synth. Cool",
+};
+
 interface Props {
   data: ComparisonRow[];
 }
@@ -16,7 +27,7 @@ export function AccuracyComparisonChart({ data }: Props) {
         <div>
           <h3 className="font-serif text-lg font-medium text-charcoal-900">Accuracy Across Stain Profiles</h3>
           <p className="text-xs text-charcoal-500 mt-0.5">
-            Frozen held-out test cohort ($N = 1,077$ patches). Baseline model collapses under deconvolution and shift; Robust model maintains accuracy.
+            Frozen held-out test cohort (N = 1,077 patches). Baseline model collapses under deconvolution and shift; Robust model maintains accuracy.
           </p>
         </div>
         <div className="flex items-center gap-4 text-xs">
@@ -112,7 +123,7 @@ export function AccuracyComparisonChart({ data }: Props) {
                     fill="#3D3A37"
                     className="font-sans font-medium"
                   >
-                    {row.condition.replace(/_/g, " ")}
+                    {CONDITION_ABBREV[row.condition] ?? row.condition.replace(/_/g, " ")}
                   </text>
                 </g>
               );
@@ -121,46 +132,6 @@ export function AccuracyComparisonChart({ data }: Props) {
         </div>
       </div>
 
-      {/* Accessible Table Alternative */}
-      <div className="pt-4 border-t border-[#E8E4DD]">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-charcoal-700">
-            Tabular Comparison
-          </span>
-          <span className="text-xs text-charcoal-400 font-mono">Held-Out Test N=1,077</span>
-        </div>
-        <div className="overflow-x-auto border border-[#E8E4DD] rounded-xl">
-          <table className="w-full text-left text-xs text-charcoal-700">
-            <thead className="bg-[#FAF8F5] border-b border-[#E8E4DD] text-charcoal-500 font-medium">
-              <tr>
-                <th scope="col" className="py-2.5 px-3">Condition</th>
-                <th scope="col" className="py-2.5 px-3 text-right">Baseline Accuracy</th>
-                <th scope="col" className="py-2.5 px-3 text-right">Robust Accuracy</th>
-                <th scope="col" className="py-2.5 px-3 text-right">Accuracy Delta</th>
-                <th scope="col" className="py-2.5 px-3 text-right">Net Recovery</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E8E4DD] font-mono text-[11px]">
-              {data.map((row) => {
-                const delta = row.robust_accuracy_pct - row.baseline_accuracy_pct;
-                return (
-                  <tr key={row.condition} className="hover:bg-[#FAF8F5] transition">
-                    <td className="py-2 px-3 font-sans font-medium text-charcoal-900">{row.condition.replace(/_/g, " ")}</td>
-                    <td className="py-2 px-3 text-right text-charcoal-600">{row.baseline_accuracy_pct.toFixed(2)}%</td>
-                    <td className="py-2 px-3 text-right font-bold text-[#CC785C]">{row.robust_accuracy_pct.toFixed(2)}%</td>
-                    <td className="py-2 px-3 text-right text-charcoal-500">
-                      {delta > 0 ? `+${delta.toFixed(2)}%` : `${delta.toFixed(2)}%`}
-                    </td>
-                    <td className="py-2 px-3 text-right font-bold text-[#2D5A46]">
-                      {row.net_recovery_pct > 0 ? `+${row.net_recovery_pct.toFixed(2)}%` : "0.00%"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 }

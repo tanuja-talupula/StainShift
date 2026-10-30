@@ -1,11 +1,12 @@
 import React from "react";
-import { Download, Database, GitBranch, Cpu, ShieldCheck } from "lucide-react";
+import { Download, Database, Cpu, ShieldCheck, ChevronDown } from "lucide-react";
 import { loadBenchmarkDataSync } from "@/lib/loadBenchmark";
 import { AccuracyComparisonChart } from "@/components/charts/AccuracyComparisonChart";
-import { AccuracyDropChart } from "@/components/charts/AccuracyDropChart";
-import { MacroF1Chart } from "@/components/charts/MacroF1Chart";
-import { LatencyChart } from "@/components/charts/LatencyChart";
 import { ConfusionMatrixViewer } from "@/components/charts/ConfusionMatrixViewer";
+import { LatencyChart } from "@/components/charts/LatencyChart";
+import { TechnicalSpecsDrawer } from "@/components/dashboard/TechnicalSpecsDrawer";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export default function DashboardPage() {
   const data = loadBenchmarkDataSync();
@@ -15,18 +16,18 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-12">
-      {/* Dashboard Editorial Header */}
+      {/* Dashboard Header */}
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#E8E4DD] pb-8">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#EDE7DE] text-charcoal-700 text-xs font-medium">
-              <span>Stage B Verified Benchmark</span>
+              Stage B Verified Benchmark
             </span>
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-charcoal-900 tracking-tight leading-tight">
               Verified Benchmark Results Dashboard
             </h1>
             <p className="text-sm sm:text-base text-charcoal-600 max-w-2xl leading-relaxed">
-              Evaluated on the frozen held-out test split of <strong>CRC-VAL-HE-7K</strong> ($N = 1,077$ unexposed patches).
+              Evaluated on the frozen held-out test split of <strong>CRC-VAL-HE-7K</strong> (N = 1,077 unexposed patches).
               Examining empirical risk minimization failure modes and physics-informed recovery.
             </p>
           </div>
@@ -42,8 +43,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Provenance Banner */}
-        <div className="p-4 rounded-2xl bg-[#F5F2EB] border border-[#E8E4DD] text-xs text-charcoal-600 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Compact provenance strip (no Git/MLflow clutter) */}
+        <div className="p-4 rounded-2xl bg-[#F5F2EB] border border-[#E8E4DD] text-xs text-charcoal-600 flex flex-wrap gap-6 items-center">
           <div className="flex items-center gap-2.5">
             <Database className="w-4 h-4 text-[#CC785C] flex-shrink-0" />
             <div>
@@ -52,24 +53,17 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-2.5">
-            <GitBranch className="w-4 h-4 text-[#CC785C] flex-shrink-0" />
-            <div>
-              <span className="text-charcoal-400 block text-[10px] uppercase font-semibold">Git Commit</span>
-              <span className="font-mono text-charcoal-900">{data.benchmark_metadata.git_commit.slice(0, 10)}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2.5">
             <Cpu className="w-4 h-4 text-[#CC785C] flex-shrink-0" />
             <div>
-              <span className="text-charcoal-400 block text-[10px] uppercase font-semibold">Device</span>
+              <span className="text-charcoal-400 block text-[10px] uppercase font-semibold">Hardware</span>
               <span className="font-medium text-charcoal-900">Apple Silicon MPS</span>
             </div>
           </div>
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-4 h-4 text-[#2D5A46] flex-shrink-0" />
             <div>
-              <span className="text-charcoal-400 block text-[10px] uppercase font-semibold">MLflow Run ID</span>
-              <span className="font-mono text-charcoal-900">{data.benchmark_metadata.mlflow_run_id.slice(0, 12)}...</span>
+              <span className="text-charcoal-400 block text-[10px] uppercase font-semibold">Status</span>
+              <span className="font-medium text-[#2D5A46]">SHA-256 Verified · Frozen Split</span>
             </div>
           </div>
         </div>
@@ -88,7 +82,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <p className="text-[11px] text-charcoal-500 pt-1 leading-snug">
-            Native unperturbed patches. Robust model gives up -1.11 percentage points on clean data.
+            Native unperturbed patches. Robust model gives up −1.11 pp on clean data.
           </p>
         </div>
 
@@ -103,7 +97,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <p className="text-[11px] text-[#9B2A2A] pt-1 leading-snug">
-            Baseline collapses under deconvolution without dye change (<strong className="font-bold">-66.02%</strong>).
+            Baseline collapses under deconvolution without dye change (<strong className="font-bold">−66.02%</strong>).
           </p>
         </div>
 
@@ -116,7 +110,7 @@ export default function DashboardPage() {
             <span className="text-xs font-mono text-charcoal-500">Max shift recovery</span>
           </div>
           <p className="text-[11px] text-[#244737] pt-1 leading-snug">
-            Beer-Lambert stain augmentation restores high tissue classification accuracy across all synthetic shifts.
+            Beer-Lambert stain augmentation restores high tissue classification accuracy.
           </p>
         </div>
 
@@ -134,25 +128,15 @@ export default function DashboardPage() {
             </span>
           </div>
           <p className="text-[11px] text-charcoal-500 pt-1 leading-snug">
-            Local hardware timing boundary: Pure model forward pass on pre-loaded device tensor.
+            Pure model forward pass on pre-loaded device tensor.
           </p>
         </div>
       </div>
 
-      {/* Main Accuracy Chart */}
+      {/* Main Accuracy Comparison Chart (keep — strongest visual) */}
       <AccuracyComparisonChart data={data.comparison_table} />
 
-      {/* Accuracy Drop and Macro F1 Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <AccuracyDropChart data={data.comparison_table} />
-        <MacroF1Chart
-          baselineResults={data.results.baseline}
-          robustResults={data.results.robust_stain_aug}
-          conditions={data.conditions_evaluated}
-        />
-      </div>
-
-      {/* Interactive Confusion Matrix */}
+      {/* Interactive Confusion Matrix (keep — interactive proof) */}
       <ConfusionMatrixViewer
         baselineResults={data.results.baseline}
         robustResults={data.results.robust_stain_aug}
@@ -160,53 +144,32 @@ export default function DashboardPage() {
         classNames={data.dataset_metadata.class_names}
       />
 
-      {/* Latency Section */}
+      {/* Latency Section (keep — hardware story) */}
       <LatencyChart
         profiles={data.latency_benchmarks.profiles}
         disclaimer={data.latency_benchmarks.disclaimer}
       />
 
-      {/* Checkpoint & Split Hashes Table */}
-      <div className="bg-white rounded-2xl border border-[#E8E4DD] p-6 shadow-sm space-y-4">
-        <div>
-          <h3 className="font-serif text-lg font-medium text-charcoal-900">Verified Checkpoint & Split Cryptographic Hashes</h3>
-          <p className="text-xs text-charcoal-500 mt-0.5">
-            Independent verification hashes matching the frozen artifacts stored in MLflow.
+      {/* Technical Specs Drawer (SHA-256, Git, MLflow — moved here from top) */}
+      <TechnicalSpecsDrawer data={data} />
+
+      {/* Launch workspace CTA */}
+      <div className="rounded-2xl bg-charcoal-900 px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="space-y-1.5">
+          <h3 className="font-serif text-xl font-medium text-white">
+            Ready to test the model live?
+          </h3>
+          <p className="text-sm text-charcoal-300">
+            Upload your own histology patches and run inference in real time.
           </p>
         </div>
-
-        <div className="overflow-x-auto border border-[#E8E4DD] rounded-xl">
-          <table className="w-full text-xs text-left text-charcoal-700">
-            <thead className="bg-[#FAF8F5] font-semibold border-b border-[#E8E4DD] text-charcoal-500">
-              <tr>
-                <th scope="col" className="py-2.5 px-3">Artifact Description</th>
-                <th scope="col" className="py-2.5 px-3">Selected Epoch</th>
-                <th scope="col" className="py-2.5 px-3">Validation F1</th>
-                <th scope="col" className="py-2.5 px-3 font-mono">SHA-256 Checksum</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E8E4DD] font-mono text-[11px]">
-              <tr>
-                <td className="py-2.5 px-3 font-sans font-medium text-charcoal-900">Frozen Split Manifest</td>
-                <td className="py-2.5 px-3 font-sans text-charcoal-400">—</td>
-                <td className="py-2.5 px-3 font-sans text-charcoal-400">—</td>
-                <td className="py-2.5 px-3 text-charcoal-600">{data.dataset_metadata.split_manifest_sha256}</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-3 font-sans font-medium text-charcoal-900">Baseline Checkpoint (baseline.pth)</td>
-                <td className="py-2.5 px-3 font-sans text-charcoal-700">Epoch {data.models.baseline.selected_epoch}</td>
-                <td className="py-2.5 px-3 text-charcoal-700">{data.models.baseline.best_val_f1.toFixed(4)}</td>
-                <td className="py-2.5 px-3 text-charcoal-600">{data.models.baseline.checkpoint_sha256}</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-3 font-sans font-medium text-charcoal-900">Robust Checkpoint (robust_stain_aug.pth)</td>
-                <td className="py-2.5 px-3 font-sans text-charcoal-700">Epoch {data.models.robust_stain_aug.selected_epoch}</td>
-                <td className="py-2.5 px-3 text-charcoal-700">{data.models.robust_stain_aug.best_val_f1.toFixed(4)}</td>
-                <td className="py-2.5 px-3 text-charcoal-600">{data.models.robust_stain_aug.checkpoint_sha256}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <Link
+          href="/workspace/"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#CC785C] hover:bg-[#B96449] text-white text-sm font-semibold whitespace-nowrap transition shadow-warm-md"
+        >
+          Launch AI Workspace
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
     </div>
   );
