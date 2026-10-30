@@ -5,11 +5,7 @@ import Link from "next/link";
 import {
   Play,
   RefreshCw,
-  BarChart2,
-  Eye,
-  ArrowRight,
   ArrowLeft,
-  Layers,
 } from "lucide-react";
 import { BackendStatusIndicator } from "@/components/workspace/BackendStatusIndicator";
 import { ModelSelector } from "@/components/workspace/ModelSelector";
@@ -288,62 +284,6 @@ export default function WorkspacePage() {
           onClearResults={handleClearResults}
         />
       )}
-
-      {/* Secondary Cards */}
-      <div className="border-t border-[#E8E4DD] pt-10 space-y-6">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-charcoal-500">
-            Benchmark & Examples
-          </span>
-          <span className="text-xs text-charcoal-400 font-mono">CRC-VAL-HE-7K Single-Cohort Study</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Link
-            href="/dashboard/"
-            className="p-6 rounded-2xl bg-white border border-[#E8E4DD] hover:border-[#CC785C] hover:shadow-warm transition group flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-9 h-9 rounded-full bg-[#FAF4ED] text-[#CC785C] flex items-center justify-center mb-3 group-hover:bg-[#CC785C] group-hover:text-white transition">
-                <BarChart2 className="w-4 h-4" />
-              </div>
-              <h3 className="font-serif text-lg font-medium text-charcoal-900">
-                Results Dashboard
-              </h3>
-              <p className="text-xs text-charcoal-500 mt-1 leading-relaxed">
-                Full 1,077-patch held-out evaluation across all 8 stain conditions.
-                Inspect accuracy recovery from 33.9% to 97.7% and hardware execution benchmarks.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#CC785C] mt-4">
-              <span>View benchmark charts</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition" />
-            </span>
-          </Link>
-
-          <Link
-            href="/demo/"
-            className="p-6 rounded-2xl bg-white border border-[#E8E4DD] hover:border-[#CC785C] hover:shadow-warm transition group flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-9 h-9 rounded-full bg-[#FAF4ED] text-[#CC785C] flex items-center justify-center mb-3 group-hover:bg-[#CC785C] group-hover:text-white transition">
-                <Eye className="w-4 h-4" />
-              </div>
-              <h3 className="font-serif text-lg font-medium text-charcoal-900">
-                Demo Explorer
-              </h3>
-              <p className="text-xs text-charcoal-500 mt-1 leading-relaxed">
-                Explore 72 pre-evaluated tissue patches across all 8 stain conditions instantly.
-                Precomputed predictions require zero backend connection.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#CC785C] mt-4">
-              <span>Explore patches</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition" />
-            </span>
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }

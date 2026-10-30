@@ -74,24 +74,6 @@ export default function LandingPage() {
             <strong className="text-[#2D5A46]">97.7%</strong> across all 8 stain profiles.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-            <Link
-              href="/workspace/"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-white text-sm font-semibold shadow-warm-md transition active:scale-[0.98]"
-            >
-              <Sparkles className="w-4 h-4" />
-              Try AI Workspace
-            </Link>
-            <a
-              href="#benchmark"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white hover:bg-[#FAF4ED] text-charcoal-700 text-sm font-medium border border-[#E8E4DD] transition shadow-warm"
-            >
-              <span>View Benchmark</span>
-              <ChevronDown className="w-4 h-4 text-charcoal-400" />
-            </a>
-          </div>
-
           {/* Quick stats ribbon */}
           <div className="flex flex-wrap items-center justify-center gap-6 mt-4 text-xs text-charcoal-500">
             <span className="flex items-center gap-1.5">
