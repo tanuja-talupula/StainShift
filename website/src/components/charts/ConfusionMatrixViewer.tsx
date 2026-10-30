@@ -140,7 +140,7 @@ export function ConfusionMatrixViewer({
           </div>
         </div>
         <span className="font-mono text-[11px] text-charcoal-400">
-          Accuracy: {activeResult ? (activeResult.accuracy > 1 ? activeResult.accuracy.toFixed(2) : (activeResult.accuracy * 100).toFixed(2)) : "0.00"}% | Macro F1: {activeResult?.macro_f1.toFixed(4)}
+          Accuracy: {activeResult ? activeResult.accuracy.toFixed(2) : "0.00"}% | Macro F1: {activeResult?.macro_f1.toFixed(4)}
         </span>
       </div>
     </div>
